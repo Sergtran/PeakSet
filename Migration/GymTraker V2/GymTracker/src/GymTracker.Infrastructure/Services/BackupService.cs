@@ -3,6 +3,7 @@ using GymTracker.Application.Abstractions.Repositories;
 using GymTracker.Application.Dtos;
 using GymTracker.Application.Exceptions;
 using GymTracker.Domain.Entities;
+using GymTracker.Domain.Enums;
 using GymTracker.Domain.ValueObjects;
 using GymTracker.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
