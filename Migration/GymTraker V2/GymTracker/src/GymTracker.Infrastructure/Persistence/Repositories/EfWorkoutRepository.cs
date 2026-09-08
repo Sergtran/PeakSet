@@ -44,10 +44,11 @@ public sealed class EfWorkoutRepository : IWorkoutRepository
 
     public async Task<decimal?> GetPreviousBestMetricAsync(
         string userId, string exerciseName, Laterality laterality,
-        ExerciseType type, CancellationToken ct = default)
+        ExerciseType type, Guid? excludeWorkoutId = null, CancellationToken ct = default)
     {
         var sets = await _db.Workouts
-            .Where(w => w.UserId == userId)
+            .Where(w => w.UserId == userId
+                && (!excludeWorkoutId.HasValue || w.Id != excludeWorkoutId.Value))
             .SelectMany(w => w.Exercises)
             .Where(e => e.Name == new Name(exerciseName) && e.Laterality == laterality)
             .SelectMany(e => e.Sets)
@@ -106,5 +107,89 @@ public sealed class EfWorkoutRepository : IWorkoutRepository
 			.ToListAsync(ct);
 
 		return rows.Select(r => new ExerciseFrequency(r.Name.Value, r.Count)).ToList();
+	}
+
+	public async Task<IReadOnlyList<ExerciseSummary>> GetUserExercisesAsync(
+		string userId, CancellationToken ct = default)
+	{
+		// Agregación en SQL: GROUP BY sobre el nombre (converter) con COUNT(*) y MAX(WorkoutDate).
+		var rows = await _db.Workouts
+			.Where(w => w.UserId == userId)
+			.SelectMany(w => w.Exercises, (w, e) => new { Exercise = e, WorkoutDate = w.WorkoutDate })
+			.GroupBy(x => x.Exercise.Name)
+			.Select(g => new
+			{
+				Name = g.Key,                       // Name convertido: EF agrupa por la columna
+				SessionCount = g.Count(),
+				LastUsed = g.Max(x => x.WorkoutDate)
+			})
+			.OrderByDescending(x => x.LastUsed)
+			.ToListAsync(ct);
+
+		return rows
+			.Select(x => new ExerciseSummary(x.Name.Value, x.SessionCount, x.LastUsed))
+			.ToList();
+	}
+
+	public async Task<IReadOnlyList<ExerciseSessionRow>> GetExerciseSessionRowsAsync(
+		string userId, string exerciseName, CancellationToken ct = default)
+	{
+		var rows = await _db.Workouts
+			.Where(w => w.UserId == userId)
+			.SelectMany(w => w.Exercises
+				.Where(e => e.Name == new Name(exerciseName))
+				.Select(e => new
+				{
+					WorkoutDate = w.WorkoutDate,
+					ExerciseType = e.ExerciseType,
+					Laterality = e.Laterality,
+					PrStatus = e.PrStatus,
+					// Se proyectan los Value Objects completos (converter) y se mapea .Value en memoria:
+					// EF Core no traduce .Value sobre propiedades convertidas dentro de la query.
+					Sets = e.Sets.Select(s => new { Reps = s.Reps, Weight = s.Weight })
+				}))
+			.ToListAsync(ct);
+
+		return rows
+			.Select(r => new ExerciseSessionRow(
+				r.WorkoutDate,
+				r.ExerciseType,
+				r.Laterality,
+				r.PrStatus,
+				r.Sets.Select(s => (s.Reps.Value, s.Weight.Value)).ToList()
+			))
+			.ToList();
+	}
+
+	public async Task<IReadOnlyList<CalendarWorkoutRow>> GetCalendarWorkoutsAsync(
+		string userId, DateTime fromInclusive, DateTime toExclusive, CancellationToken ct = default)
+	{
+		var rows = await _db.Workouts
+			.AsNoTracking()
+			.Where(w => w.UserId == userId
+				&& w.WorkoutDate >= fromInclusive
+				&& w.WorkoutDate < toExclusive)
+			.OrderBy(w => w.WorkoutDate)
+			.Select(w => new { w.Id, w.WorkoutDate, Routine = w.RoutineName, Session = w.SessionName })
+			.ToListAsync(ct);
+
+		return rows
+			.Select(r => new CalendarWorkoutRow(r.Id, r.WorkoutDate, r.Routine.Value, r.Session.Value))
+			.ToList();
+	}
+
+	public async Task<Workout?> GetByIdForUpdateAsync(
+		string userId, Guid id, CancellationToken ct = default)
+		=> await _db.Workouts
+			.AsTracking()
+			.FirstOrDefaultAsync(w => w.UserId == userId && w.Id == id, ct);
+
+	public async Task UpdateAsync(Workout workout, CancellationToken ct = default)
+		=> await _db.SaveChangesAsync(ct);
+
+	public async Task DeleteAsync(Workout workout, CancellationToken ct = default)
+	{
+		_db.Workouts.Remove(workout);
+		await _db.SaveChangesAsync(ct);
 	}
 }

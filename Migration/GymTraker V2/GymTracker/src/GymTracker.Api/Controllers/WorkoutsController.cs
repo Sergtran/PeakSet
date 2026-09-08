@@ -49,4 +49,25 @@ public class WorkoutsController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<ActionResult<WorkoutDto>> GetById(Guid id, CancellationToken ct)
 		=> Ok(await _workoutService.GetWorkoutAsync(UserId, id, ct));
+
+	[HttpPut("{id:guid}")]
+	[ProducesResponseType(typeof(WorkoutDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<WorkoutDto>> Edit(Guid id, CreateWorkoutRequest request, CancellationToken ct)
+	{
+		var validation = await _createValidator.ValidateAsync(request, ct);
+		if (!validation.IsValid)
+			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+
+		return Ok(await _workoutService.EditWorkoutAsync(UserId, id, request, ct));
+	}
+
+	[HttpDelete("{id:guid}")]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+	{
+		await _workoutService.DeleteWorkoutAsync(UserId, id, ct);
+		return NoContent();
+	}
 }

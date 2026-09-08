@@ -38,7 +38,7 @@ public sealed class WorkoutService : IWorkoutService
 			var currentMax = MaxMetric(exercise);
 			var previousBest = await _repository.GetPreviousBestMetricAsync(
 				userId, exerciseRequest.Name, exerciseRequest.Laterality,
-				exerciseRequest.ExerciseType, ct);
+				exerciseRequest.ExerciseType, null, ct);
 
 			exercise.SetPrStatus(ResolvePrStatus(currentMax, previousBest));
 		}
@@ -71,6 +71,54 @@ public sealed class WorkoutService : IWorkoutService
 			?? throw new NotFoundException("Entrenamiento no encontrado.");
 
 		return MapWorkout(workout);
+	}
+
+	public async Task<WorkoutDto> EditWorkoutAsync(
+		string userId, Guid id, CreateWorkoutRequest request, CancellationToken ct = default)
+	{
+		// Editar = borrar el anterior y crear uno nuevo. Reemplazar hijos en EF con CASCADE
+		// resultaba en "expected 1 row, affected 0"; este flujo es simple y correcto:
+		// al borrar primero, el PR del nuevo se calcula contra el resto del historial.
+		var tracked = await _repository.GetByIdForUpdateAsync(userId, id, ct)
+			?? throw new NotFoundException("Entrenamiento no encontrado.");
+
+		await _repository.DeleteAsync(tracked, ct);
+
+		var workout = new Workout(
+			userId,
+			new Name(request.RoutineName),
+			new Name(request.SessionName),
+			request.WorkoutDate,
+			request.RoutineId);
+
+		foreach (var exerciseRequest in request.Exercises)
+		{
+			var exercise = workout.AddExercise(
+				new Name(exerciseRequest.Name),
+				exerciseRequest.ExerciseType,
+				exerciseRequest.Laterality);
+
+			foreach (var setRequest in exerciseRequest.Sets)
+				exercise.AddSet(new Repetitions(setRequest.Reps), new Weight(setRequest.Weight));
+
+			var currentMax = MaxMetric(exercise);
+			var previousBest = await _repository.GetPreviousBestMetricAsync(
+				userId, exerciseRequest.Name, exerciseRequest.Laterality,
+				exerciseRequest.ExerciseType, null, ct);
+
+			exercise.SetPrStatus(ResolvePrStatus(currentMax, previousBest));
+		}
+
+		await _repository.AddAsync(workout, ct);
+		return MapWorkout(workout);
+	}
+
+	public async Task DeleteWorkoutAsync(string userId, Guid id, CancellationToken ct = default)
+	{
+		var workout = await _repository.GetByIdForUpdateAsync(userId, id, ct)
+			?? throw new NotFoundException("Entrenamiento no encontrado.");
+
+		await _repository.DeleteAsync(workout, ct);
 	}
 
 	private static decimal MaxMetric(WorkoutExercise exercise)

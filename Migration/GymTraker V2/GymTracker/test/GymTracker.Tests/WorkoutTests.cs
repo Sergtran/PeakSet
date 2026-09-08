@@ -111,4 +111,19 @@ public class WorkoutTests
 
 		Assert.Null(exercise.PrStatus);
 	}
+
+	[Fact]
+	public void UpdateDetails_ShouldReplaceSnapshotNamesAndDate()
+	{
+		var workout = new Workout(UserId, new Name("Push"), new Name("Día 1"), new DateTime(2026, 8, 3, 10, 0, 0, DateTimeKind.Utc));
+
+		workout.UpdateDetails(
+			new Name("Pull"),
+			new Name("Día 2"),
+			new DateTime(2026, 8, 5, 18, 30, 0, DateTimeKind.Utc));
+
+		Assert.Equal("Pull", workout.RoutineName.Value);
+		Assert.Equal("Día 2", workout.SessionName.Value);
+		Assert.Equal(new DateTime(2026, 8, 5, 18, 30, 0, DateTimeKind.Utc), workout.WorkoutDate);
+	}
 }

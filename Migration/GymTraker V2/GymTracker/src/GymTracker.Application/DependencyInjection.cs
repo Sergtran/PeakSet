@@ -14,6 +14,8 @@ public static class DependencyInjection
 		services.AddScoped<IWorkoutService, WorkoutService>();
 		services.AddScoped<ICurrentRoutineService, CurrentRoutineService>();
 		services.AddScoped<IRoutineStatsService, RoutineStatsService>();
+		services.AddScoped<IExerciseStatsService, ExerciseStatsService>();
+		services.AddScoped<ICalendarService, CalendarService>();
 		return services;
 	}
 }

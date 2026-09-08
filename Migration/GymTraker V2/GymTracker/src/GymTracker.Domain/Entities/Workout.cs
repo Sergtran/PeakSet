@@ -64,6 +64,16 @@ public sealed class Workout : Entity
 		return exercise;
 	}
 
+	public void UpdateDetails(Name routineName, Name sessionName, DateTime workoutDate)
+	{
+		ArgumentNullException.ThrowIfNull(routineName);
+		ArgumentNullException.ThrowIfNull(sessionName);
+
+		RoutineName = routineName;
+		SessionName = sessionName;
+		WorkoutDate = workoutDate;
+	}
+
 	public void RemoveExercise(Guid exerciseId)
 	{
 		var exercise = FindExercise(exerciseId);
