@@ -11,4 +11,5 @@ public interface IRoutineRepository
 	Task<Routine?> GetByIdWithSessionsAsync(string userId, Guid id, CancellationToken ct = default);
 	Task UpdateAsync(Routine routine, CancellationToken ct = default);
 	Task DeleteAsync(Routine routine, CancellationToken ct = default);
+	Task<IReadOnlyList<Routine>> GetByUserWithSessionsAsync(string userId, CancellationToken ct = default);
 }

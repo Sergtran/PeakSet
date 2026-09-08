@@ -3,6 +3,7 @@
 **Documento de trabajo único** para adaptar GymTracker a las habilidades que pide el mercado y conseguir empleo en ≤12 semanas.
 
 **Actualizado:** 2026-08-18
+**Estado de implementación (2026-09-08):** Fases 1-6 completadas (Domain, Identity/EF Core/PostgreSQL, Auth + Feature Routine, Workout + historial + PR, Active Routine + Stats sin ciclos, Stats + Calendario + Import/Export). Siguiente: Fase 7 — Docker + CI/CD + Deploy (semana 5-6 del plan).
 
 ## Jerarquía de archivos (cómo se usan juntos)
 

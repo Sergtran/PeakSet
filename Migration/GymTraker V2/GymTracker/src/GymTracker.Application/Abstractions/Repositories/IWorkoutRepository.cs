@@ -29,4 +29,6 @@ public interface IWorkoutRepository
 	Task UpdateAsync(Workout workout, CancellationToken ct = default);
 	Task DeleteAsync(Workout workout, CancellationToken ct = default);
 	Task AddAsync(Workout workout, CancellationToken ct = default);
+
+	Task<IReadOnlyList<Workout>> GetByUserAllAsync(string userId, CancellationToken ct = default);
 }

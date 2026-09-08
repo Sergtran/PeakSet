@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GymTracker.Infrastructure.Persistence.Repositories;
 
-public sealed class EfWorkoutRepository : IWorkoutRepository
+public sealed class EfWorkoutRepository	: IWorkoutRepository
 {
 	private readonly GymTrackerDbContext _db;
 
@@ -18,6 +18,7 @@ public sealed class EfWorkoutRepository : IWorkoutRepository
 	public async Task<Workout?> GetByIdAsync(string userId, Guid id, CancellationToken ct = default)
 		=> await _db.Workouts
 			.AsNoTracking()
+			.AsSplitQuery()
 			.Include(w => w.Exercises)
 				.ThenInclude(e => e.Sets)
 			.FirstOrDefaultAsync(w => w.UserId == userId && w.Id == id, ct);
@@ -33,6 +34,7 @@ public sealed class EfWorkoutRepository : IWorkoutRepository
 		var totalCount = await query.CountAsync(ct);
 
 		var items = await query
+			.AsSplitQuery()
 			.Skip((page - 1) * pageSize)
 			.Take(pageSize)
 			.Include(w => w.Exercises)
@@ -192,4 +194,15 @@ public sealed class EfWorkoutRepository : IWorkoutRepository
 		_db.Workouts.Remove(workout);
 		await _db.SaveChangesAsync(ct);
 	}
+
+	public async Task<IReadOnlyList<Workout>> GetByUserAllAsync(
+	string userId, CancellationToken ct = default)
+	=> await _db.Workouts
+		.AsNoTracking()
+		.AsSplitQuery()
+		.Where(w => w.UserId == userId)
+		.OrderBy(w => w.WorkoutDate)
+		.Include(w => w.Exercises)
+			.ThenInclude(e => e.Sets)
+		.ToListAsync(ct);
 }

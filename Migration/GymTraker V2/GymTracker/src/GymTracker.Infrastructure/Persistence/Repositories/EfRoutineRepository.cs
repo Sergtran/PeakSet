@@ -40,6 +40,7 @@ public sealed class EfRoutineRepository : IRoutineRepository
 	public async Task<Routine?> GetByIdWithSessionsAsync(string userId, Guid id, CancellationToken ct = default)
 	=> await _db.Routines
 		.AsTracking()
+		.AsSplitQuery()
 		.Include(r => r.Sessions)
 			.ThenInclude(s => s.Exercises)
 		.FirstOrDefaultAsync(r => r.UserId == userId && r.Id == id, ct);
@@ -52,4 +53,15 @@ public sealed class EfRoutineRepository : IRoutineRepository
 		_db.Routines.Remove(routine);
 		await _db.SaveChangesAsync(ct);
 	}
+
+	public async Task<IReadOnlyList<Routine>> GetByUserWithSessionsAsync(
+	string userId, CancellationToken ct = default)
+	=> await _db.Routines
+		.AsNoTracking()
+		.AsSplitQuery()                       
+		.Where(r => r.UserId == userId)
+		.OrderBy(r => r.CreatedAt)
+		.Include(r => r.Sessions)
+			.ThenInclude(s => s.Exercises)
+		.ToListAsync(ct);
 }
