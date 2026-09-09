@@ -98,4 +98,15 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.MapGet("/", () => Results.Ok(new
+{
+	name = "PeakSet API",
+	status = "running",
+	version = "2.0",
+	swagger = "/swagger",
+	documentation = "https://github.com/Sergtran/PeakSet",
+	baseUrl = "https://peakset-api.azurewebsites.net"
+}));
+
 app.Run();
