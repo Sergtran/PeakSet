@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: gymtracker-postgres
+    container_name: peakset-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -10,7 +10,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - gymtracker_postgres_data:/var/lib/postgresql/data
+      - peakset_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -19,9 +19,9 @@ services:
 
   api:
     build:
-      context: "Migration/GymTraker V2/GymTracker"
+      context: "Migration/PeakSet"
       dockerfile: Dockerfile
-    container_name: gymtracker-api
+    container_name: peakset-api
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
@@ -38,4 +38,4 @@ services:
         condition: service_healthy
 
 volumes:
-  gymtracker_postgres_data:
+  peakset_postgres_data:

@@ -1,6 +1,7 @@
 {
-  "name": "GymTracker",
-  "short_name": "GymTracker",
+  "name": "PeakSet",
+  "short_name": "PeakSet",
+  "description": "Training & Progress Tracker: rutinas, sesiones, historial, PRs y estadísticas.",
   "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",

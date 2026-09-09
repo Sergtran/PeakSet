@@ -2,10 +2,11 @@
 <html lang="es">
 <head>
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/icon-192.png">
     <meta name="theme-color" content="#f6fafc">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gym Tracker V33.0 Cloud ☁️</title>
+    <title>PeakSet — Training &amp; Progress Tracker</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
@@ -922,8 +923,8 @@
 
     <div id="loginOverlay">
         <div class="login-card">
-            <h1 style="margin-bottom:10px;">Gym Tracker</h1>
-            <p style="color:var(--text-header); margin-bottom:20px;">Entrenamientos en la Nube ☁️</p>
+            <h1 style="margin-bottom:10px;">PeakSet</h1>
+            <p style="color:var(--text-header); margin-bottom:20px;">Tu diario de entrenamiento. Cada serie cuenta.</p>
             <button type="button" class="btn-google" id="btnGoogleLogin">
                 <span style="background:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; color:black; font-weight:bold;">G</span>
                 Entrar con Google
@@ -1027,10 +1028,10 @@
 
     <div class="app-container hidden" id="mainAppContainer">
         <button class="theme-toggle" id="btnThemeToggle" onclick="window.toggleTheme()">🌙</button>
-        <div id="cloudStatus">☁️ Guardado</div>
+        <div id="cloudStatus">✓ Guardado</div>
 
         <div id="menuView">
-            <h2>Gym Tracker 💪</h2>
+            <h2>PeakSet</h2>
             
             <div id="activeCyclePanel" class="cycle-panel hidden">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -4121,7 +4122,7 @@
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `gymtracker_export_${uid}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+                    a.download = `peakset_export_${uid}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
                     document.body.appendChild(a);
                     a.click();
                     a.remove();

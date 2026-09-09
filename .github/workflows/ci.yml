@@ -20,5 +20,5 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Compilar y correr tests
-        working-directory: Migration/GymTraker V2/GymTracker
-        run: dotnet test GymTracker.sln --configuration Release
+        working-directory: Migration/PeakSet
+        run: dotnet test PeakSet.sln --configuration Release
