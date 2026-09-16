@@ -81,6 +81,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+const string frontendCorsPolicy = "Frontend";
+
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy(frontendCorsPolicy, policy =>
+	{
+		var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?
+			.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			?? [];
+
+		if (allowedOrigins.Length > 0)
+		{
+			policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+		}
+	});
+});
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -95,6 +112,7 @@ if (enableSwagger)
 }
 
 app.UseHttpsRedirection();
+app.UseCors(frontendCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

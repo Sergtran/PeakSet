@@ -58,7 +58,17 @@ src/
 
 ## Deployment
 
-The build output in `dist/` is a static folder and can be hosted on Firebase
-Hosting, Azure Static Web Apps or any static host. Remember to set
-`VITE_API_BASE_URL` at build time, and to allow the hosting origin in the API's
-CORS configuration.
+The frontend is hosted on **Azure Static Web Apps** and deployed by
+`.github/workflows/frontend.yml` on every push to `main`.
+
+Two things make it work:
+
+1. `VITE_API_BASE_URL` is set at build time. In development the app calls `/api`
+   and Vite proxies it; in production there is no proxy, so the absolute API URL
+   is baked into the bundle.
+2. The API allows the Static Web App origin. Set the app setting
+   `Cors__AllowedOrigins` on the API to the site URL (comma separated for more
+   than one). Without it the browser blocks every call.
+
+`public/staticwebapp.config.json` travels with the build and tells Static Web
+Apps to serve `index.html` for unknown paths.

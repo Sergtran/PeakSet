@@ -154,7 +154,7 @@ export const en = {
 
   'history.empty': 'Nothing logged yet',
   'history.emptyBody': 'Your saved workouts will show up here, newest first.',
-  'history.total': '{count} workouts',
+  'history.total': 'Workouts logged: {count}',
   'history.loadMore': 'Load more',
   'history.page': 'Page {page} of {total}',
 
@@ -374,7 +374,7 @@ export const es: Record<TranslationKey, string> = {
 
   'history.empty': 'Todavía no hay nada registrado',
   'history.emptyBody': 'Tus entrenamientos guardados van a aparecer aquí, del más reciente al más viejo.',
-  'history.total': '{count} entrenamientos',
+  'history.total': 'Entrenamientos registrados: {count}',
   'history.loadMore': 'Cargar más',
   'history.page': 'Página {page} de {total}',
 
