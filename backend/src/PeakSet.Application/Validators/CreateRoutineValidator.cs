@@ -10,7 +10,9 @@ public sealed class CreateRoutineValidator : AbstractValidator<CreateRoutineRequ
 	{
 		RuleFor(x => x.Name)
 			.NotEmpty().WithMessage("Routine name is required.")
+				.WithErrorCode("RoutineNameRequired")
 			.MaximumLength(Routine.MaxNameLength)
-			.WithMessage($"Name cannot exceed {Routine.MaxNameLength} characters.");
+			.WithMessage($"Name cannot exceed {Routine.MaxNameLength} characters.")
+				.WithErrorCode("NameTooLong");
 	}
 }

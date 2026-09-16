@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using PeakSet.Application.Abstractions;
 using PeakSet.Application.Dtos;
 using FluentValidation;
@@ -32,7 +32,7 @@ public class WorkoutsController : ControllerBase
 	{
 		var validation = await _createValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		var workout = await _workoutService.CreateWorkoutAsync(UserId, request, ct);
 		return CreatedAtAction(nameof(GetById), new { id = workout.Id }, workout);
@@ -57,7 +57,7 @@ public class WorkoutsController : ControllerBase
 	{
 		var validation = await _createValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _workoutService.EditWorkoutAsync(UserId, id, request, ct));
 	}

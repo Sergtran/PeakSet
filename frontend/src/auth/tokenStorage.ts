@@ -1,14 +1,6 @@
-/**
- * Keeps the session (JWT + basic profile) in localStorage so the user is still
- * signed in after a page refresh.
- *
- * Note: localStorage is readable by any script on the page, so this is only
- * good enough for a training app. If PeakSet ever handles sensitive data we
- * should move the token into an httpOnly cookie.
- */
-
 const TOKEN_KEY = 'peakset.token'
 const PROFILE_KEY = 'peakset.profile'
+const LANGUAGE_KEY = 'peakset.language'
 
 export type Profile = {
   email: string
@@ -20,8 +12,7 @@ export function saveSession(token: string, profile: Profile): void {
     localStorage.setItem(TOKEN_KEY, token)
     localStorage.setItem(PROFILE_KEY, JSON.stringify(profile))
   } catch {
-    // Private browsing modes can block storage. Staying signed in is not
-    // critical, so we simply keep the session in memory.
+    return
   }
 }
 
@@ -51,6 +42,22 @@ export function clearSession(): void {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(PROFILE_KEY)
   } catch {
-    // Nothing to do: the in-memory session is cleared by the caller anyway.
+    return
+  }
+}
+
+export function loadStoredLanguage(): string | null {
+  try {
+    return localStorage.getItem(LANGUAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function saveStoredLanguage(language: string): void {
+  try {
+    localStorage.setItem(LANGUAGE_KEY, language)
+  } catch {
+    return
   }
 }

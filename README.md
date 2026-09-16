@@ -166,6 +166,8 @@ Interactive documentation: `https://peakset-api.azurewebsites.net/swagger`
 | `GET` | `/api/exercises` | Exercise catalog. |
 | `GET` | `/api/exercises/{name}/progress` | Progress history for an exercise. |
 | `PUT` | `/api/users/me/current-routine` | Set the current routine. |
+| `GET` | `/api/users/me/settings` | User theme and interval timer settings. |
+| `PUT` | `/api/users/me/settings` | Update theme and interval timer settings. |
 | `GET` | `/api/calendar/{year}/{month}` | Monthly training calendar. |
 | `GET` | `/api/data/export` | Export the user data set. |
 | `POST` | `/api/data/import` | Import a user data set. |
@@ -185,6 +187,26 @@ curl -X POST https://peakset-api.azurewebsites.net/api/auth/login \
 ```
 
 Both endpoints return an access token that is sent to protected endpoints as `Authorization: Bearer <token>`.
+
+### Error responses
+
+Failures return RFC 7807 problem details with a machine readable list of errors, so clients translate
+by code instead of matching prose:
+
+```json
+{
+  "title": "Validation failed",
+  "status": 400,
+  "detail": "Password must have at least one non alphanumeric character.",
+  "errors": [
+    { "code": "PasswordRequiresNonAlphanumeric", "message": "Passwords must have at least one non alphanumeric character." }
+  ]
+}
+```
+
+Codes come from ASP.NET Identity for account rules (`PasswordTooShort`, `DuplicateUserName`, ...) and
+from the validators for request rules (`EmailInvalid`, `SetWeightInvalid`, ...). Internal failures
+never expose the underlying exception message.
 
 ## Database
 

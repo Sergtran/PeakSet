@@ -35,7 +35,8 @@ public sealed class AuthService : IAuthService
 
 		var result = await _userManager.CreateAsync(user, request.Password);
 		if (!result.Succeeded)
-			throw new ValidationException(result.Errors.Select(e => e.Description));
+			throw new ValidationException(
+				result.Errors.Select(e => new ValidationError(e.Code, e.Description)));
 
 		// Create default UserSettings on registration.
 		_db.UserSettings.Add(new UserSettings(user.Id));

@@ -46,7 +46,10 @@ public sealed class BackupService : IBackupService
 	public async Task ImportAsync(string userId, PeakSetExportDto snapshot, CancellationToken ct = default)
 	{
 		if (snapshot.Version != 1)
-			throw new ValidationException(new[] { "Unsupported backup version." });
+			throw new ValidationException(new[]
+			{
+				new ValidationError("UnsupportedBackupVersion", "Unsupported backup version.")
+			});
 
 		var routines = snapshot.Routines ?? Array.Empty<RoutineExportDto>();
 		var workouts = snapshot.Workouts ?? Array.Empty<WorkoutExportDto>();
@@ -55,7 +58,10 @@ public sealed class BackupService : IBackupService
 		var routineIds = new HashSet<Guid>();
 		foreach (var routine in routines)
 			if (!routineIds.Add(routine.Id))
-				throw new ValidationException(new[] { "The backup contains routines with duplicate Ids." });
+			throw new ValidationException(new[]
+			{
+				new ValidationError("DuplicateRoutineIds", "The backup contains routines with duplicate Ids.")
+			});
 
 		await using var transaction = await _db.Database.BeginTransactionAsync(ct);
 		try

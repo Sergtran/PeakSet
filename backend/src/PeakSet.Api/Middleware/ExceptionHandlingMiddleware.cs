@@ -34,13 +34,17 @@ public sealed class ExceptionHandlingMiddleware
 			ValidationException validation =>
 				(StatusCodes.Status400BadRequest, "Validation failed", validation.Errors),
 			InvalidCredentialsException =>
-				(StatusCodes.Status401Unauthorized, "Invalid credentials", null),
-			DomainException =>
-				(StatusCodes.Status400BadRequest, "Business rule violation", null),
-			NotFoundException =>
-				(StatusCodes.Status404NotFound, "Not found", null),
+				(StatusCodes.Status401Unauthorized, "Invalid credentials",
+					Single("InvalidCredentials", "Incorrect email or password.")),
+			DomainException domain =>
+				(StatusCodes.Status400BadRequest, "Business rule violation",
+					Single("DomainRule", domain.Message)),
+			NotFoundException notFound =>
+				(StatusCodes.Status404NotFound, "Not found",
+					Single("NotFound", notFound.Message)),
 			_ =>
-				(StatusCodes.Status500InternalServerError, "An unexpected error occurred", null)
+				(StatusCodes.Status500InternalServerError, "An unexpected error occurred",
+					Single("Unexpected", "An unexpected error occurred."))
 		};
 
 		if (statusCode == StatusCodes.Status500InternalServerError)
@@ -53,12 +57,14 @@ public sealed class ExceptionHandlingMiddleware
 		{
 			Status = statusCode,
 			Title = title,
-			Detail = exception.Message
+			Detail = string.Join(" ", errors.Select(error => error.Message))
 		};
 
-		if (errors is not null)
-			problem.Extensions["errors"] = errors;
+		problem.Extensions["errors"] = errors;
 
 		await context.Response.WriteAsJsonAsync(problem, context.RequestAborted);
 	}
+
+	private static IReadOnlyCollection<ValidationError> Single(string code, string message)
+		=> new[] { new ValidationError(code, message) };
 }

@@ -27,6 +27,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// Routine
 		modelBuilder.Entity<Routine>(e =>
 		{
+			e.Property(r => r.Id).ValueGeneratedNever();
+
 			e.Property(r => r.Name)
 			 .HasConversion(name => name.Value, value => new Name(value))
 			 .HasMaxLength(Routine.MaxNameLength)
@@ -48,6 +50,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// WorkoutSession
 		modelBuilder.Entity<WorkoutSession>(e =>
 		{
+			e.Property(s => s.Id).ValueGeneratedNever();
+
 			e.Property(s => s.Name)
 			 .HasConversion(name => name.Value, value => new Name(value))
 			 .HasMaxLength(WorkoutSession.MaxNameLength)
@@ -59,6 +63,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// SessionExercise
 		modelBuilder.Entity<SessionExercise>(e =>
 		{
+			e.Property(x => x.Id).ValueGeneratedNever();
+
 			e.Property(x => x.Name)
 			 .HasConversion(name => name.Value, value => new Name(value))
 			 .HasMaxLength(SessionExercise.MaxNameLength)
@@ -73,6 +79,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// Workout
 		modelBuilder.Entity<Workout>(e =>
 		{
+			e.Property(w => w.Id).ValueGeneratedNever();
+
 			e.Property(w => w.RoutineName)
 			 .HasConversion(name => name.Value, value => new Name(value))
 			 .HasMaxLength(Routine.MaxNameLength)
@@ -101,6 +109,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// WorkoutExercise
 		modelBuilder.Entity<WorkoutExercise>(e =>
 		{
+			e.Property(x => x.Id).ValueGeneratedNever();
+
 			e.Property(x => x.Name)
 			 .HasConversion(name => name.Value, value => new Name(value))
 			 .HasMaxLength(WorkoutExercise.MaxNameLength)
@@ -118,6 +128,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// WorkoutSet
 		modelBuilder.Entity<WorkoutSet>(e =>
 		{
+			e.Property(s => s.Id).ValueGeneratedNever();
+
 			e.Property(s => s.SetNumber).IsRequired();
 
 			e.Property(s => s.Reps)
@@ -137,6 +149,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// ExerciseNote
 		modelBuilder.Entity<ExerciseNote>(e =>
 		{
+			e.Property(x => x.Id).ValueGeneratedNever();
+
 			e.Property(x => x.ExerciseName)
 			 .HasConversion(name => name.Value, value => new Name(value))
 			 .HasMaxLength(150)
@@ -153,6 +167,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// UserExercisePreference
 		modelBuilder.Entity<UserExercisePreference>(e =>
 		{
+			e.Property(x => x.Id).ValueGeneratedNever();
+
 			e.Property(x => x.ExerciseName)
 			 .HasConversion(name => name.Value, value => new Name(value))
 			 .HasMaxLength(150)
@@ -172,6 +188,8 @@ public sealed class PeakSetDbContext : IdentityDbContext<ApplicationUser>
 		// UserSettings
 		modelBuilder.Entity<UserSettings>(e =>
 		{
+			e.Property(x => x.Id).ValueGeneratedNever();
+
 			e.Property(x => x.Theme).HasConversion<string>();
 
 			e.HasIndex(x => x.UserId).IsUnique();

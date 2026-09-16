@@ -1,4 +1,4 @@
-﻿using AppValidationException = PeakSet.Application.Exceptions.ValidationException;
+using AppValidationException = PeakSet.Application.Exceptions.ValidationException;
 using PeakSet.Application.Abstractions;
 using PeakSet.Application.Dtos;
 using FluentValidation;
@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
 	{
 		var validation = await _registerValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _authService.RegisterAsync(request, ct));
 	}
@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
 	{
 		var validation = await _loginValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _authService.LoginAsync(request, ct));
 	}

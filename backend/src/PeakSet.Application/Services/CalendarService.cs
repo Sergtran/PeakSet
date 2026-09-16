@@ -16,9 +16,15 @@ public sealed class CalendarService : ICalendarService
 		string userId, int year, int month, CancellationToken ct = default)
 	{
 		if (year is < 2000 or > 2100)
-			throw new ValidationException(new[] { "Year must be between 2000 and 2100." });
+			throw new ValidationException(new[]
+			{
+				new ValidationError("CalendarYearOutOfRange", "Year must be between 2000 and 2100.")
+			});
 		if (month is < 1 or > 12)
-			throw new ValidationException(new[] { "Month must be between 1 and 12." });
+			throw new ValidationException(new[]
+			{
+				new ValidationError("CalendarMonthOutOfRange", "Month must be between 1 and 12.")
+			});
 
 		// Npgsql exige DateTime con Kind=Utc para comparar contra timestamp with time zone.
 		var from = DateTime.SpecifyKind(new DateTime(year, month, 1), DateTimeKind.Utc);

@@ -1,41 +1,28 @@
-/**
- * The only place in the app that knows how to talk to the PeakSet API.
- *
- * Every screen goes through `apiRequest`, so the base URL, the
- * `Authorization: Bearer` header and all error handling live here exactly once.
- */
-
-/**
- * During development this stays as "/api" and `vite.config.ts` proxies the
- * request to the deployed API. In production we set VITE_API_BASE_URL to the
- * absolute URL of the API (see .env.example).
- */
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
-/** An error coming from the API (or from the network itself). */
-export class ApiError extends Error {
-  /** HTTP status code. `0` means we never got a response (offline, DNS, ...). */
-  readonly status: number
+export type ApiErrorItem = {
+  code: string
+  message: string
+}
 
-  constructor(status: number, message: string) {
+export class ApiError extends Error {
+  readonly status: number
+  readonly items: readonly ApiErrorItem[]
+
+  constructor(status: number, message: string, items: readonly ApiErrorItem[] = []) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.items = items
   }
 }
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  /** Plain object: it is serialized to JSON for you. */
   body?: unknown
-  /** JWT of the signed in user. Omitted for public endpoints such as login. */
   token?: string | null
 }
 
-/**
- * Calls the API and returns the parsed JSON body.
- * Throws an `ApiError` when the response is not 2xx.
- */
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, token } = options
 
@@ -55,13 +42,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {
-    throw new ApiError(0, 'Could not reach the PeakSet API. Check your connection and try again.')
+    throw new ApiError(0, '')
   }
 
   const payload = await parseBody(response)
 
   if (!response.ok) {
-    throw new ApiError(response.status, describeError(payload, response.status))
+    const problem = readProblem(payload)
+    throw new ApiError(response.status, problem.message, problem.items)
   }
 
   return payload as T
@@ -79,31 +67,45 @@ async function parseBody(response: Response): Promise<unknown> {
   }
 }
 
-/**
- * The backend returns RFC 7807 problem details, for example:
- * `{ "status": 400, "title": "Validation failed", "detail": "Password must be at least 6 characters long." }`
- */
-function describeError(payload: unknown, status: number): string {
+type Problem = { message: string; items: ApiErrorItem[] }
+
+function readProblem(payload: unknown): Problem {
   if (typeof payload === 'string' && payload.trim()) {
-    return payload.trim()
+    return { message: payload.trim(), items: [] }
   }
 
   if (payload && typeof payload === 'object') {
     const problem = payload as { detail?: unknown; errors?: unknown; title?: unknown }
+    const items = Array.isArray(problem.errors)
+      ? problem.errors.map(readErrorItem).filter((item): item is ApiErrorItem => item !== null)
+      : []
 
-    if (typeof problem.detail === 'string' && problem.detail.trim()) {
-      return problem.detail.trim()
+    if (items.length > 0) {
+      return { message: items.map((item) => item.message).join(' '), items }
     }
-    if (Array.isArray(problem.errors) && problem.errors.length > 0) {
-      return problem.errors.join(' ')
+    if (typeof problem.detail === 'string' && problem.detail.trim()) {
+      return { message: problem.detail.trim(), items: [] }
     }
     if (typeof problem.title === 'string' && problem.title.trim()) {
-      return problem.title.trim()
+      return { message: problem.title.trim(), items: [] }
     }
   }
 
-  if (status === 401) {
-    return 'Your session has expired. Please sign in again.'
+  return { message: '', items: [] }
+}
+
+function readErrorItem(entry: unknown): ApiErrorItem | null {
+  if (typeof entry === 'string') {
+    return entry.trim() ? { code: '', message: entry.trim() } : null
   }
-  return `The request failed (HTTP ${status}).`
+  if (entry && typeof entry === 'object') {
+    const item = entry as { code?: unknown; message?: unknown }
+    if (typeof item.message === 'string' && item.message.trim()) {
+      return {
+        code: typeof item.code === 'string' ? item.code : '',
+        message: item.message.trim(),
+      }
+    }
+  }
+  return null
 }

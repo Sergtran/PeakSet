@@ -10,10 +10,12 @@ public sealed class CreateSessionExerciseRequestValidator : AbstractValidator<Cr
 	{
 		RuleFor(x => x.Name)
 			.NotEmpty().WithMessage("Exercise name is required.")
+				.WithErrorCode("ExerciseNameRequired")
 			.MaximumLength(SessionExercise.MaxNameLength)
-			.WithMessage($"Name cannot exceed {SessionExercise.MaxNameLength} characters.");
+			.WithMessage($"Name cannot exceed {SessionExercise.MaxNameLength} characters.")
+				.WithErrorCode("NameTooLong");
 
-		RuleFor(x => x.ExerciseType).IsInEnum();
-		RuleFor(x => x.Laterality).IsInEnum();
+		RuleFor(x => x.ExerciseType).IsInEnum().WithErrorCode("ExerciseTypeInvalid");
+		RuleFor(x => x.Laterality).IsInEnum().WithErrorCode("LateralityInvalid");
 	}
 }

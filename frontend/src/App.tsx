@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react'
+import './App.css'
 import type { AuthResponse } from './api/auth'
+import { AuthProvider } from './auth/AuthProvider'
 import {
   clearSession,
   loadProfile,
@@ -7,28 +9,17 @@ import {
   saveSession,
   type Profile,
 } from './auth/tokenStorage'
-import { DashboardPage } from './pages/DashboardPage'
+import { AppShell } from './components/AppShell'
+import { NavigationProvider } from './navigation/NavigationProvider'
 import { LoginPage } from './pages/LoginPage'
-import './App.css'
+import { SettingsProvider } from './settings/SettingsProvider'
 
-/**
- * Root component.
- *
- * It owns the only two pieces of global state the app has right now: the JWT
- * and the signed in profile. Without a token we show the login screen,
- * otherwise we show the dashboard. Once there are more screens, this is where
- * a router will live.
- */
 export default function App() {
-  // Reading from localStorage in the initializer keeps the session across refreshes.
   const [token, setToken] = useState<string | null>(() => loadToken())
   const [profile, setProfile] = useState<Profile | null>(() => loadProfile())
 
   const handleAuthenticated = useCallback((session: AuthResponse) => {
-    const nextProfile: Profile = {
-      email: session.email,
-      displayName: session.displayName,
-    }
+    const nextProfile: Profile = { email: session.email, displayName: session.displayName }
     saveSession(session.token, nextProfile)
     setToken(session.token)
     setProfile(nextProfile)
@@ -44,5 +35,13 @@ export default function App() {
     return <LoginPage onAuthenticated={handleAuthenticated} />
   }
 
-  return <DashboardPage token={token} profile={profile} onSignOut={handleSignOut} />
+  return (
+    <AuthProvider token={token} profile={profile} signOut={handleSignOut}>
+      <SettingsProvider>
+        <NavigationProvider>
+          <AppShell />
+        </NavigationProvider>
+      </SettingsProvider>
+    </AuthProvider>
+  )
 }

@@ -5,7 +5,7 @@ public sealed class WorkoutSetValidator : AbstractValidator<CreateWorkoutSetRequ
 {
 	public WorkoutSetValidator()
 	{
-		RuleFor(x => x.Reps).GreaterThanOrEqualTo(0);
-		RuleFor(x => x.Weight).GreaterThanOrEqualTo(0);
+		RuleFor(x => x.Reps).GreaterThanOrEqualTo(0).WithErrorCode("SetRepsInvalid");
+		RuleFor(x => x.Weight).GreaterThanOrEqualTo(0).WithErrorCode("SetWeightInvalid");
 	}
 }

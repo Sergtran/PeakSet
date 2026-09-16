@@ -9,13 +9,18 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
 	{
 		RuleFor(x => x.Email)
 			.NotEmpty().WithMessage("Email is required.")
-			.EmailAddress().WithMessage("Email is not valid.");
+				.WithErrorCode("EmailRequired")
+			.EmailAddress().WithMessage("Email is not valid.")
+				.WithErrorCode("EmailInvalid");
 
 		RuleFor(x => x.Password)
 			.NotEmpty().WithMessage("Password is required.")
-			.MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
+				.WithErrorCode("PasswordRequired")
+			.MinimumLength(6).WithMessage("Password must be at least 6 characters long.")
+				.WithErrorCode("PasswordTooShort");
 
 		RuleFor(x => x.DisplayName)
-			.MaximumLength(100).WithMessage("Name cannot exceed 100 characters.");
+			.MaximumLength(100).WithMessage("Name cannot exceed 100 characters.")
+				.WithErrorCode("NameTooLong");
 	}
 }

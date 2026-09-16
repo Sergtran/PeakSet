@@ -1,6 +1,5 @@
 import { apiRequest } from './client'
 
-/** What the API returns from /api/auth/login and /api/auth/register. */
 export type AuthResponse = {
   token: string
   email: string

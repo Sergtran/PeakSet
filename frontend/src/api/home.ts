@@ -1,6 +1,5 @@
 import { apiRequest } from './client'
 
-/** Summary of the routine the user marked as current. */
 export type RoutineOverview = {
   routineId: string
   name: string
@@ -12,7 +11,6 @@ export type RoutineOverview = {
   prCount: number
 }
 
-/** Response of GET /api/home. */
 export type Home = {
   currentRoutine: RoutineOverview | null
 }

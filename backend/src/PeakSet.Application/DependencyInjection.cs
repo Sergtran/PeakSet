@@ -13,6 +13,7 @@ public static class DependencyInjection
 		services.AddScoped<IRoutineService, RoutineService>();
 		services.AddScoped<IWorkoutService, WorkoutService>();
 		services.AddScoped<ICurrentRoutineService, CurrentRoutineService>();
+		services.AddScoped<IUserSettingsService, UserSettingsService>();
 		services.AddScoped<IRoutineStatsService, RoutineStatsService>();
 		services.AddScoped<IExerciseStatsService, ExerciseStatsService>();
 		services.AddScoped<ICalendarService, CalendarService>();

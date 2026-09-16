@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using PeakSet.Application.Abstractions;
 using PeakSet.Application.Dtos;
 using FluentValidation;
@@ -43,7 +43,7 @@ public class RoutinesController : ControllerBase
 	{
 		var validation = await _createValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		var routine = await _routineService.CreateRoutineAsync(UserId, request, ct);
 		return CreatedAtAction(nameof(GetById), new { id = routine.Id }, routine);
@@ -66,7 +66,7 @@ public class RoutinesController : ControllerBase
 	{
 		var validation = await _sessionValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _routineService.AddSessionAsync(UserId, routineId, request, ct));
 	}
@@ -77,7 +77,7 @@ public class RoutinesController : ControllerBase
 	{
 		var validation = await _exerciseValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _routineService.AddExerciseAsync(UserId, routineId, sessionId, request, ct));
 	}
@@ -89,7 +89,7 @@ public class RoutinesController : ControllerBase
 	{
 		var validation = await _createValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _routineService.RenameRoutineAsync(UserId, id, request, ct));
 	}
@@ -111,7 +111,7 @@ public class RoutinesController : ControllerBase
 	{
 		var validation = await _sessionValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _routineService.RenameSessionAsync(UserId, routineId, sessionId, request, ct));
 	}
@@ -134,7 +134,7 @@ public class RoutinesController : ControllerBase
 	{
 		var validation = await _exerciseValidator.ValidateAsync(request, ct);
 		if (!validation.IsValid)
-			throw new AppValidationException(validation.Errors.Select(e => e.ErrorMessage));
+			throw new AppValidationException(validation.Errors);
 
 		return Ok(await _routineService.EditExerciseAsync(UserId, routineId, sessionId, exerciseId, request, ct));
 	}
