@@ -76,5 +76,25 @@ export function useIntervalTimer(config: Settings) {
     setState((current) => advance({ ...current, running: true, remaining: 1 }, config))
   }, [config])
 
-  return { ...state, total: config.sets, start, pause, reset, skip }
+  const previous = useCallback(() => {
+    setState((current) => {
+      if (current.phase === 'rest') {
+        return { ...current, phase: 'work', remaining: config.workSeconds }
+      }
+      if (current.phase === 'work' && current.set > 1) {
+        return {
+          ...current,
+          phase: 'rest',
+          set: current.set - 1,
+          remaining: config.restSeconds,
+        }
+      }
+      if (current.phase === 'done') {
+        return { ...current, running: false, phase: 'work', set: config.sets, remaining: config.workSeconds }
+      }
+      return { ...current, phase: 'prep', set: 1, remaining: config.prepSeconds }
+    })
+  }, [config])
+
+  return { ...state, total: config.sets, start, pause, reset, skip, previous }
 }

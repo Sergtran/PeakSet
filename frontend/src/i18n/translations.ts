@@ -169,6 +169,7 @@ export const en = {
   'train.timerStart': 'Start timer',
   'train.timerStop': 'Stop timer',
   'train.timerSkip': 'Skip',
+  'train.timerBack': 'Previous',
   'train.timerFinished': 'Timer finished',
 
   'history.empty': 'Nothing logged yet',
@@ -412,6 +413,7 @@ export const es: Record<TranslationKey, string> = {
   'train.timerStart': 'Iniciar timer',
   'train.timerStop': 'Detener timer',
   'train.timerSkip': 'Saltar',
+  'train.timerBack': 'Anterior',
   'train.timerFinished': 'Timer terminado',
 
   'history.empty': 'Todavía no hay nada registrado',

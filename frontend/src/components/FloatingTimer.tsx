@@ -1,4 +1,4 @@
-import { Pause, Play, RotateCcw, SkipForward } from 'lucide-react'
+import { Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatSeconds, useIntervalTimer } from '@/hooks/useIntervalTimer'
 import { useI18n } from '@/i18n/context'
@@ -41,6 +41,15 @@ export function FloatingTimer() {
         </span>
 
         <div className="ml-auto flex items-center gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label={t('train.timerBack')}
+            onClick={timer.previous}
+          >
+            <SkipBack className="size-4" />
+          </Button>
+
           <Button
             size="icon"
             variant="ghost"

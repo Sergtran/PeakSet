@@ -8,6 +8,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { fetchHome } from '@/api/home'
+import { fetchExercises } from '@/api/exercises'
 import {
   createSession,
   createSessionExercise,
@@ -386,6 +387,7 @@ function ExerciseForm({
 }) {
   const { t } = useI18n()
   const nameId = useId()
+  const suggestions = useApiQuery('exercises', (token) => fetchExercises(token))
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [exerciseType, setExerciseType] = useState<ExerciseType>('Standard')
@@ -414,11 +416,17 @@ function ExerciseForm({
         <Label htmlFor={nameId}>{t('routine.exerciseNamePlaceholder')}</Label>
         <Input
           id={nameId}
+          list={`${nameId}-list`}
           value={name}
           maxLength={150}
           autoFocus
           onChange={(event) => setName(event.target.value)}
         />
+        <datalist id={`${nameId}-list`}>
+          {suggestions.data?.map((item) => (
+            <option key={item.name} value={item.name} />
+          ))}
+        </datalist>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

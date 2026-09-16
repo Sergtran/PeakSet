@@ -180,7 +180,11 @@ function SessionRunner({
       <PageHeader
         title={session.name}
         subtitle={routineName}
-        onBack={() => navigate({ name: 'train' })}
+        actions={
+          <Button disabled={saving || filled.length === 0} onClick={() => void handleSave()}>
+            {saving ? t('train.saving') : t('train.save')}
+          </Button>
+        }
       />
 
       <div className="grid gap-4 pb-28">
@@ -263,17 +267,6 @@ function SessionRunner({
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      <div className="pointer-events-none fixed inset-x-0 bottom-28 z-20 px-4 md:bottom-20">
-        <Button
-          size="lg"
-          className="pointer-events-auto mx-auto flex h-12 w-full max-w-md"
-          disabled={saving || filled.length === 0}
-          onClick={() => void handleSave()}
-        >
-          {saving ? t('train.saving') : t('train.save')}
-        </Button>
       </div>
 
       <FloatingTimer />
