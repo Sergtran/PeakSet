@@ -1,0 +1,25 @@
+@host = https://peakset-api.azurewebsites.net
+@token = paste-your-jwt-token-here
+
+### Register a new user
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "ChangeMe!123",
+  "displayName": "New User"
+}
+
+### Log in
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "ChangeMe!123"
+}
+
+### List routines of the current user
+GET {{host}}/api/routines
+Authorization: Bearer {{token}}

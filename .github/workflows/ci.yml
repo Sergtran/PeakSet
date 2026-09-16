@@ -11,22 +11,28 @@ permissions:
 
 jobs:
   build-test:
+    name: Build and test
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del codigo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar .NET 8
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Compilar y correr tests
-        working-directory: Migration/PeakSet
-        run: dotnet test PeakSet.sln --configuration Release
+      - name: Restore
+        working-directory: backend
+        run: dotnet restore PeakSet.sln
+
+      - name: Build and test
+        working-directory: backend
+        run: dotnet test PeakSet.sln --configuration Release --no-restore
 
   deploy:
+    name: Deploy to Azure
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-test
     runs-on: ubuntu-latest
@@ -36,26 +42,26 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout del codigo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar .NET 8
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Publicar API
-        working-directory: Migration/PeakSet
+      - name: Publish API
+        working-directory: backend
         run: dotnet publish src/PeakSet.Api/PeakSet.Api.csproj --configuration Release --output "${{ runner.temp }}/publish"
 
-      - name: Login en Azure con OIDC
+      - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy a Azure App Service
+      - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
           app-name: peakset-api
