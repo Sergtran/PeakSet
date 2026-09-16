@@ -83,20 +83,18 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 const string frontendCorsPolicy = "Frontend";
 
-builder.Services.AddCors(options =>
-{
-	options.AddPolicy(frontendCorsPolicy, policy =>
-	{
-		var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?
-			.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-			?? [];
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"]?
+	.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+	?? [];
 
-		if (allowedOrigins.Length > 0)
-		{
-			policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
-		}
-	});
-});
+// Only wired up when origins are configured. App Service can also answer CORS at
+// the platform level, and having both active would duplicate the response header.
+if (allowedOrigins.Length > 0)
+{
+	builder.Services.AddCors(options =>
+		options.AddPolicy(frontendCorsPolicy, policy =>
+			policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
+}
 
 var app = builder.Build();
 
@@ -112,7 +110,12 @@ if (enableSwagger)
 }
 
 app.UseHttpsRedirection();
-app.UseCors(frontendCorsPolicy);
+
+if (allowedOrigins.Length > 0)
+{
+	app.UseCors(frontendCorsPolicy);
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

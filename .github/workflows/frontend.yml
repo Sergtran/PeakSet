@@ -47,6 +47,27 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ env.API_BASE_URL }}
 
+      # Guards against publishing the TypeScript sources instead of the bundle.
+      - name: Verify the build output
+        working-directory: frontend
+        run: |
+          if grep -q '/src/main.tsx' dist/index.html; then
+            echo "::error::dist/index.html still points at the TypeScript source."
+            exit 1
+          fi
+          if ! grep -q '/assets/' dist/index.html; then
+            echo "::error::dist/index.html does not reference a hashed bundle."
+            exit 1
+          fi
+          echo "Build output looks correct."
+
+      - name: Upload the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          if-no-files-found: error
+
   deploy:
     name: Deploy to Azure Static Web Apps
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -57,26 +78,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      # Deploys the artifact the build job already verified, instead of rebuilding.
+      - name: Download the verified build
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Build
-        working-directory: frontend
-        run: |
-          npm ci
-          npm run build
-        env:
-          VITE_API_BASE_URL: ${{ env.API_BASE_URL }}
+          name: frontend-dist
+          path: frontend/dist
 
       - name: Deploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: upload
-          app_location: frontend
-          output_location: dist
+          app_location: frontend/dist
+          output_location: ''
           skip_app_build: true
