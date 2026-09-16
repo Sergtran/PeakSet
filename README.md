@@ -1,150 +1,215 @@
 # PeakSet
 
-> Training & Progress Tracker — tu diario de entrenamiento. Cada serie cuenta.
+**Training and progress tracker for strength training.** Plan your routines, log every set, and follow your progress over time.
 
 [![CI/CD](https://github.com/Sergtran/PeakSet/actions/workflows/ci.yml/badge.svg)](https://github.com/Sergtran/PeakSet/actions/workflows/ci.yml)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://www.postgresql.org/)
-[![Azure](https://img.shields.io/badge/Azure-App%20Service-0078D4?logo=microsoftazure)](https://azure.microsoft.com/)
+[![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://www.postgresql.org/)
+[![Azure App Service](https://img.shields.io/badge/Azure-App%20Service-0078D4?logo=microsoftazure)](https://azure.microsoft.com/)
 
-![PeakSet](icon-512.png)
+![PeakSet](assets/logo-512.png)
 
-Aplicación full-stack de seguimiento de entrenamientos: rutinas, sesiones, historial, PRs y estadísticas en la nube. Cuenta con una **API ASP.NET Core 8** desplegada en Azure (Clean Architecture + DDD, EF Core + PostgreSQL, Identity + JWT) y una **PWA cliente** instalable.
+## Overview
 
----
+PeakSet is a REST API for tracking strength training. It manages training routines, planned sessions, completed workouts, personal records, calendar history, statistics and per-user preferences.
 
-## Qué es PeakSet
-
-PeakSet nació como una app personal para dejar de perder el registro de los entrenamientos. Registra tu **rutina actual**, completa **sesiones** con series, repeticiones y peso (ejercicios unilaterales y bilaterales), y consulta **historial, calendario, PRs y estadísticas** con gráficas de evolución.
-
-La versión 2 (rama actual) migra la lógica a una **API REST en .NET** con arquitectura limpia, autenticación JWT y PostgreSQL, lista para consumir desde cualquier cliente.
+The API is built with ASP.NET Core 8 following Clean Architecture and Domain-Driven Design, persists data in PostgreSQL through Entity Framework Core, and authenticates users with ASP.NET Core Identity and JWT bearer tokens.
 
 ## Features
 
-- **Rutinas y ciclos**: rutina actual con seguimiento semanal y barra de progreso
-- **Sesiones de entrenamiento**: series, repeticiones, peso y ejercicios unilaterales/bilaterales
-- **Historial y calendario**: consulta y clona sesiones pasadas
-- **PRs y estadísticas**: gráficas de evolución por ejercicio
-- **Interval timer** integrado
-- **Sincronización en la nube** con cuenta (PWA instalable, tema claro/oscuro, soporte móvil)
-- **API-first**: catálogo de ejercicios, rutinas, sesiones, workouts y exportación/importación de datos
+- **Routines**: create training routines with planned sessions and exercises, and mark one as the current routine.
+- **Workout logging**: record completed workouts with sets, reps and weight, including unilateral/bilateral and time-based exercises.
+- **Personal records**: PR status is computed per exercise when a workout is saved, while historical values are preserved.
+- **Progress analytics**: per-exercise progress, top exercises, routine usage and routine statistics.
+- **Calendar**: monthly training history by year and month.
+- **Backup**: export and import a complete user data set.
+- **Authentication**: user registration and login with JWT access tokens.
+- **API documentation**: interactive OpenAPI/Swagger UI.
 
-## Stack
+## Architecture
 
-| Capa | Tecnología |
-|---|---|
-| Frontend | PWA en HTML/CSS/JS (Firebase Auth + Firestore, Chart.js) |
-| Backend | C# / ASP.NET Core 8 — Clean Architecture + DDD |
-| Datos | EF Core + PostgreSQL 16 |
-| Auth | ASP.NET Identity + JWT (API-first) |
-| Infra | Docker, GitHub Actions (CI/CD), Azure App Service + Azure Database for PostgreSQL |
-| Tests | 35+ tests con xUnit |
-
-## Arquitectura
-
-La solución se divide en capas con dependencias dirigidas hacia el dominio:
-
-```text
-PeakSet.Domain         → Entidades y reglas de negocio (sin dependencias externas)
-PeakSet.Application    → Casos de uso, DTOs, validadores (FluentValidation)
-PeakSet.Infrastructure → EF Core, repositorios, Identity, JWT, migraciones
-PeakSet.Api            → Controllers REST, middleware de errores, Swagger/OpenAPI
-PeakSet.Tests          → Tests de dominio y aplicación (xUnit)
+```mermaid
+flowchart LR
+    client["Web / mobile client"] -->|HTTPS + JWT| api["PeakSet.Api<br/>ASP.NET Core 8"]
+    api --> app["PeakSet.Application<br/>use cases, DTOs, validation"]
+    app --> domain["PeakSet.Domain<br/>entities, value objects, business rules"]
+    app --> infra["PeakSet.Infrastructure<br/>EF Core, Identity, JWT, repositories"]
+    infra --> db[("PostgreSQL 16")]
 ```
 
-![Arquitectura general](Migration/PeakSet/docs/Arquitectura%20general.png)
+| Layer | Responsibility |
+|---|---|
+| `PeakSet.Domain` | Entities, value objects and business rules. No external dependencies. |
+| `PeakSet.Application` | Use cases, DTOs and validation rules. |
+| `PeakSet.Infrastructure` | EF Core persistence, repositories, Identity and JWT. |
+| `PeakSet.Api` | REST controllers, error handling middleware, Swagger and dependency wiring. |
+| `PeakSet.Tests` | Unit tests for the domain and application layers. |
 
-![Arquitectura de la solución](Migration/PeakSet/docs/Arquitectura%20de%20la%20soluci%C3%B3n.png)
+## Tech stack
 
-### Estructura del repositorio
+| Area | Technology |
+|---|---|
+| Runtime | .NET 8 / ASP.NET Core |
+| Language | C# 12 |
+| Persistence | Entity Framework Core + PostgreSQL 16 |
+| Authentication | ASP.NET Core Identity + JWT |
+| Validation | FluentValidation |
+| API documentation | Swagger / OpenAPI (Swashbuckle) |
+| Testing | xUnit (35 tests) |
+| Local runtime | Docker Compose |
+| CI/CD | GitHub Actions with Azure OIDC authentication |
+| Hosting | Azure App Service + Azure Database for PostgreSQL |
+
+## Repository layout
 
 ```text
 .
-├── index.html / manifest.json     # PWA cliente (PeakSet)
-├── Migration/PeakSet/             # API .NET 8 (Clean Architecture)
-│   ├── src/                       # Domain, Application, Infrastructure, Api
-│   ├── test/                      # PeakSet.Tests (xUnit)
-│   └── Dockerfile
-└── docker-compose.yml             # PostgreSQL 16 + API para desarrollo local
+├── .github/workflows/ci.yml   # Build, test and deploy pipeline
+├── assets/                    # Brand assets
+├── backend/                   # .NET solution
+│   ├── src/PeakSet.Api
+│   ├── src/PeakSet.Application
+│   ├── src/PeakSet.Domain
+│   ├── src/PeakSet.Infrastructure
+│   ├── tests/PeakSet.Tests
+│   ├── Dockerfile
+│   └── PeakSet.sln
+├── docs/                      # Repository documentation
+├── docker-compose.yml         # Local PostgreSQL + API stack
+└── README.md
 ```
 
-## Cómo correrla localmente
+## Getting started
 
-Requisitos: Docker Desktop y una copia de `.env` con las variables del proyecto.
+### Prerequisites
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (optional, for the local stack)
+
+### Run the full stack with Docker
+
+Create your local environment file from the template:
+
+```bash
+cp .env.example .env
+```
+
+Then start PostgreSQL and the API:
 
 ```bash
 docker compose up -d
 ```
 
-La API queda en `http://localhost:8080` con Swagger en `/swagger`, y PostgreSQL en el puerto configurado.
+- API: http://localhost:8080
+- Swagger UI: http://localhost:8080/swagger
 
-Para desarrollo con hot reload:
+### Run the API locally
 
 ```bash
-cd Migration/PeakSet
+cd backend
 dotnet run --project src/PeakSet.Api
 ```
 
-## API en vivo
+By default the API looks for a PostgreSQL instance configured through `ConnectionStrings__DefaultConnection` or `appsettings.Development.json`.
 
-La API está desplegada en Azure App Service (Linux):
+### Run the tests
 
-- **Base URL:** https://peakset-api.azurewebsites.net
-- **Swagger / OpenAPI:** https://peakset-api.azurewebsites.net/swagger
+```bash
+cd backend
+dotnet test PeakSet.sln --configuration Release
+```
 
-Ejemplo de registro:
+## Configuration
+
+| Variable | Description |
+|---|---|
+| `ConnectionStrings__DefaultConnection` | PostgreSQL connection string. |
+| `Jwt__Issuer` | JWT issuer. |
+| `Jwt__Audience` | JWT audience. |
+| `Jwt__Key` | Symmetric signing key (at least 32 characters). |
+| `Jwt__ExpirationMinutes` | Access token lifetime in minutes. |
+| `Swagger__Enabled` | Enables Swagger UI outside the Development environment. |
+| `ASPNETCORE_ENVIRONMENT` | Hosting environment (`Development`, `Production`). |
+
+In Azure App Service these settings are stored as application settings; no secrets are committed to the repository.
+
+## API reference
+
+Base URL: `https://peakset-api.azurewebsites.net`
+
+Interactive documentation: `https://peakset-api.azurewebsites.net/swagger`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/register` | Register a new user and return a JWT. |
+| `POST` | `/api/auth/login` | Authenticate a user and return a JWT. |
+| `GET` | `/api/home` | Dashboard summary for the current user. |
+| `GET` | `/api/routines` | List the routines of the current user. |
+| `POST` | `/api/routines` | Create a routine. |
+| `GET` | `/api/routines/{id}` | Get a routine with its sessions and exercises. |
+| `PUT` | `/api/routines/{id}` | Update a routine. |
+| `DELETE` | `/api/routines/{id}` | Delete a routine. |
+| `POST` | `/api/routines/{routineId}/sessions` | Add a planned session. |
+| `PUT` | `/api/routines/{routineId}/sessions/{sessionId}` | Update a planned session. |
+| `DELETE` | `/api/routines/{routineId}/sessions/{sessionId}` | Delete a planned session. |
+| `POST` | `/api/routines/{routineId}/sessions/{sessionId}/exercises` | Add an exercise to a session. |
+| `PUT` | `/api/routines/{routineId}/sessions/{sessionId}/exercises/{exerciseId}` | Update a session exercise. |
+| `DELETE` | `/api/routines/{routineId}/sessions/{sessionId}/exercises/{exerciseId}` | Remove a session exercise. |
+| `GET` | `/api/routines/{id}/stats` | Routine statistics. |
+| `GET` | `/api/routines/{id}/usage` | Routine usage metrics. |
+| `GET` | `/api/routines/{id}/exercises/top` | Most used exercises in a routine. |
+| `POST` | `/api/workouts` | Log a completed workout. |
+| `GET` | `/api/workouts` | Paginated workout history. |
+| `GET` | `/api/workouts/{id}` | Workout detail. |
+| `PUT` | `/api/workouts/{id}` | Update a workout. |
+| `DELETE` | `/api/workouts/{id}` | Delete a workout. |
+| `GET` | `/api/exercises` | Exercise catalog. |
+| `GET` | `/api/exercises/{name}/progress` | Progress history for an exercise. |
+| `PUT` | `/api/users/me/current-routine` | Set the current routine. |
+| `GET` | `/api/calendar/{year}/{month}` | Monthly training calendar. |
+| `GET` | `/api/data/export` | Export the user data set. |
+| `POST` | `/api/data/import` | Import a user data set. |
+
+### Example: register and log in
 
 ```bash
 curl -X POST https://peakset-api.azurewebsites.net/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"tu@email.com","password":"TuClave!123","displayName":"Tu Nombre"}'
+  -d '{"email":"user@example.com","password":"ChangeMe!123","displayName":"New User"}'
 ```
-
-Ejemplo de login (responde con un token JWT):
 
 ```bash
 curl -X POST https://peakset-api.azurewebsites.net/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"tu@email.com","password":"TuClave!123"}'
+  -d '{"email":"user@example.com","password":"ChangeMe!123"}'
 ```
 
-Usa el token en el header `Authorization: Bearer <token>` para los endpoints protegidos (`/api/routines`, `/api/workouts`, `/api/users`, `/api/exercises`, `/api/home`, `/api/data`, `/api/calendar`).
+Both endpoints return an access token that is sent to protected endpoints as `Authorization: Bearer <token>`.
 
-## Testing
+## Database
+
+The schema is managed with Entity Framework Core migrations. To apply migrations to a database:
 
 ```bash
-cd Migration/PeakSet
-dotnet test PeakSet.sln --configuration Release
+cd backend
+dotnet ef database update --project src/PeakSet.Infrastructure --startup-project src/PeakSet.Api
 ```
 
-**35/35 tests** con xUnit sobre el dominio y la aplicación (validadores, PRs, sesiones, rutinas).
+## Deployment
 
-## Azure
+The API is hosted on **Azure App Service** (Linux) with an **Azure Database for PostgreSQL** flexible server. Both resources run in the same Azure region and the database connection requires SSL.
 
-- **App Service (Linux, Free F1):** `peakset-api` — Canada Central
-  - Runtime .NET 8, HTTPS disponible en `https://peakset-api.azurewebsites.net`
-- **Azure Database for PostgreSQL 16 (Flexible Server):** `peakset-db` — Canada Central
-  - SKU B1ms burstable, 32 GiB, conexión con SSL obligatorio
-- Configuración por **variables de entorno** del App Service (connection string, JWT, flags de Swagger) — sin secretos en el repositorio
-- Migraciones EF Core aplicadas en el pipeline de despliegue
-
-## CI/CD
-
-Pipeline único en [`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+The deployment pipeline runs on every push to `main`:
 
 ```text
-Push a main ──► build-test ──► deploy (OIDC) ──► Azure App Service
-PR a main   ──► build-test
+Push to main ──► restore ──► build and test ──► deploy to Azure App Service
+Pull request ──► restore ──► build and test
 ```
 
-- **CI** (`build-test`): restaura, compila y corre los 35 tests en cada push y PR a `main`
-- **CD** (`deploy`): publica la API y despliega a Azure App Service cuando el push a `main` pasa los tests
-- **Seguridad**: autenticación con **GitHub Actions OIDC + federated credential** de Azure — no se almacenan credenciales de Azure de larga duración en GitHub
+Authentication with Azure uses **GitHub Actions OIDC** and a federated credential, so no long-lived Azure credentials are stored in GitHub.
 
-![Pipeline CI/CD en verde](Migration/PeakSet/docs/ci-cd-green.png)
+![CI/CD pipeline](docs/ci-cd.png)
 
-Últimos runs: https://github.com/Sergtran/PeakSet/actions
+## License
 
----
-
-Hecho con .NET, PostgreSQL y mucha disciplina. Cada serie cuenta. 💪
+Copyright © PeakSet. All rights reserved.
