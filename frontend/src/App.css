@@ -143,6 +143,25 @@
   color: var(--text-muted);
 }
 
+.link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--primary-deep);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.reset-header {
+  display: grid;
+  gap: 4px;
+}
+
 /* ---------- Buttons ---------- */
 
 .btn {

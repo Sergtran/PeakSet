@@ -40,6 +40,8 @@ const codeTranslations: Record<string, TranslationKey> = {
   PasswordRequiresUniqueChars: 'errors.passwordUniqueChars',
   DuplicateUserName: 'errors.emailTaken',
   DuplicateEmail: 'errors.emailTaken',
+  InvalidToken: 'errors.invalidResetToken',
+  ResetTokenRequired: 'errors.resetTokenRequired',
 }
 
 function translateItem(item: ApiErrorItem, t: Translate): string {
@@ -47,12 +49,17 @@ function translateItem(item: ApiErrorItem, t: Translate): string {
   return key ? t(key) : item.message
 }
 
+/** Distinct codes can describe the same problem, so the list is deduplicated. */
+function dedupe(messages: string[]): string[] {
+  return Array.from(new Set(messages))
+}
+
 export function describeApiError(error: unknown, t: Translate): string[] {
   if (!(error instanceof ApiError)) {
     return [t('errors.unexpected')]
   }
   if (error.items.length > 0) {
-    return error.items.map((item) => translateItem(item, t))
+    return dedupe(error.items.map((item) => translateItem(item, t)))
   }
   if (error.status === 0) {
     return [t('errors.network')]

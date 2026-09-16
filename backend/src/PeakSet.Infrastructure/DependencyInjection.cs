@@ -16,6 +16,7 @@ public static class DependencyInjection
 		services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 		services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<IEmailSender, LoggingEmailSender>();
 		services.AddScoped<IRoutineRepository, EfRoutineRepository>();
 		services.AddScoped<IWorkoutRepository, EfWorkoutRepository>();
 		services.AddScoped<IUserSettingsRepository, EfUserSettingsRepository>();

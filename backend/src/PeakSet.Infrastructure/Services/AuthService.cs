@@ -12,15 +12,18 @@ public sealed class AuthService : IAuthService
 {
 	private readonly UserManager<ApplicationUser> _userManager;
 	private readonly IJwtTokenGenerator _tokenGenerator;
+	private readonly IEmailSender _emailSender;
 	private readonly PeakSetDbContext _db;
 
 	public AuthService(
 		UserManager<ApplicationUser> userManager,
 		IJwtTokenGenerator tokenGenerator,
+		IEmailSender emailSender,
 		PeakSetDbContext db)
 	{
 		_userManager = userManager;
 		_tokenGenerator = tokenGenerator;
+		_emailSender = emailSender;
 		_db = db;
 	}
 
@@ -58,5 +61,46 @@ public sealed class AuthService : IAuthService
 			_tokenGenerator.GenerateToken(user.Id, user.Email!, user.DisplayName ?? string.Empty),
 			user.Email!,
 			user.DisplayName);
+	}
+
+	public async Task RequestPasswordResetAsync(
+		ForgotPasswordRequest request, CancellationToken ct = default)
+	{
+		var user = await _userManager.FindByEmailAsync(request.Email);
+
+		// Accounts are not enumerated: an unknown email produces the same response.
+		if (user is null || user.Email is null)
+			return;
+
+		var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+		var body =
+			$"""
+			PeakSet password reset
+
+			Paste this token in the app to choose a new password:
+
+			{token}
+
+			If you did not ask for this, ignore this message.
+			""";
+
+		await _emailSender.SendAsync(user.Email, "PeakSet password reset", body, ct);
+	}
+
+	public async Task ResetPasswordAsync(
+		ResetPasswordRequest request, CancellationToken ct = default)
+	{
+		var user = await _userManager.FindByEmailAsync(request.Email);
+
+		if (user is null)
+			throw new ValidationException(new[]
+			{
+				new ValidationError("InvalidResetToken", "The reset token is not valid or has expired.")
+			});
+
+		var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+		if (!result.Succeeded)
+			throw new ValidationException(
+				result.Errors.Select(e => new ValidationError(e.Code, e.Description)));
 	}
 }
