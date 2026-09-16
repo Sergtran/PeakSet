@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useApiQuery } from '@/hooks/useApiQuery'
+import { useWakeLock } from '@/hooks/useWakeLock'
 import { describeApiError } from '@/i18n/apiErrors'
 import { useI18n } from '@/i18n/context'
 import { useNavigation } from '@/navigation/context'
@@ -92,6 +93,7 @@ function SessionRunner({
   const { token } = useAuth()
   const { navigate } = useNavigation()
   const { settings } = useSettings()
+  useWakeLock(true)
   const [draft, setDraft] = useState<DraftExercise[]>(() =>
     session.exercises.map((exercise) => ({
       name: exercise.name,
