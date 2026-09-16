@@ -94,7 +94,7 @@ export function HomePage() {
               key={item.id}
               type="button"
               className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-accent/40"
-              onClick={() => navigate({ name: 'routine', routineId: item.id })}
+              onClick={() => navigate({ name: 'routines', expand: item.id })}
             >
               <ListChecks className="size-4 text-muted-foreground" />
               <span className="flex-1 truncate font-medium">{item.name}</span>

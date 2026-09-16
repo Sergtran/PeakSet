@@ -7,7 +7,6 @@ import { CalendarPage } from '@/pages/CalendarPage'
 import { ExercisePage } from '@/pages/ExercisePage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { HomePage } from '@/pages/HomePage'
-import { RoutinePage } from '@/pages/RoutinePage'
 import { RoutinesPage } from '@/pages/RoutinesPage'
 import { SessionPage } from '@/pages/SessionPage'
 import { SettingsPage } from '@/pages/SettingsPage'
@@ -30,7 +29,6 @@ const navItems: NavItem[] = [
 ]
 
 const children: Partial<Record<Route['name'], Route['name'][]>> = {
-  routines: ['routine'],
   history: ['workout'],
   train: ['session'],
 }
@@ -54,9 +52,7 @@ function renderRoute(route: Route) {
         />
       )
     case 'routines':
-      return <RoutinesPage />
-    case 'routine':
-      return <RoutinePage routineId={route.routineId} />
+      return <RoutinesPage key={route.expand ?? 'list'} expand={route.expand} />
     case 'history':
       return <HistoryPage />
     case 'workout':

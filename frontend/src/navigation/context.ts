@@ -4,8 +4,7 @@ export type Route =
   | { name: 'menu' }
   | { name: 'train' }
   | { name: 'session'; routineId: string; sessionId: string; sessionName: string }
-  | { name: 'routines' }
-  | { name: 'routine'; routineId: string }
+  | { name: 'routines'; expand?: string }
   | { name: 'history' }
   | { name: 'workout'; workoutId: string }
   | { name: 'calendar' }
