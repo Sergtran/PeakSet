@@ -12,7 +12,6 @@ export type Route =
   | { name: 'stats' }
   | { name: 'exercise'; exerciseName: string }
   | { name: 'settings' }
-  | { name: 'data' }
 
 export type RouteName = Route['name']
 

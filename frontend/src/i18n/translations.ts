@@ -80,6 +80,7 @@ export const en = {
   'common.none': 'None',
 
   'menu.train': 'Train',
+  'menu.home': 'Home',
   'menu.trainHint': 'Start a session',
   'menu.routines': 'My Routines',
   'menu.routinesHint': 'Create and edit your routines',
@@ -96,6 +97,8 @@ export const en = {
   'menu.signOut': 'Sign out',
 
   'home.currentRoutine': 'Current routine: {name}',
+  'home.currentRoutineLabel': 'Current routine',
+  'home.greeting': 'Hi {name}',
   'home.noRoutine': 'No routine yet',
   'home.noRoutineBody':
     'Create your first routine and mark it as current. Then your workouts and records will show up here.',
@@ -113,6 +116,7 @@ export const en = {
   'routines.makeCurrent': 'Set as current',
   'routines.sessionCount': '{count} sessions',
   'routines.open': 'Open',
+  'routines.manage': 'Manage',
 
   'routine.sessions': 'Sessions',
   'routine.noSessions': 'This routine has no sessions',
@@ -200,6 +204,10 @@ export const en = {
   'stats.search': 'Search an exercise',
 
   'settings.title': 'Settings',
+  'settings.profile': 'Profile',
+  'settings.profileNote': 'Your name and email come from your account.',
+  'settings.preferences': 'Preferences',
+  'settings.saveFailed': 'Could not access your settings.',
   'settings.timer': 'Interval timer',
   'settings.prep': 'Prep (sec)',
   'settings.work': 'Work (sec)',
@@ -311,6 +319,7 @@ export const es: Record<TranslationKey, string> = {
   'common.none': 'Ninguno',
 
   'menu.train': 'Entrenar',
+  'menu.home': 'Inicio',
   'menu.trainHint': 'Empezar una sesión',
   'menu.routines': 'Mis Rutinas',
   'menu.routinesHint': 'Crea y edita tus rutinas',
@@ -327,6 +336,8 @@ export const es: Record<TranslationKey, string> = {
   'menu.signOut': 'Cerrar Sesión',
 
   'home.currentRoutine': 'Rutina actual: {name}',
+  'home.currentRoutineLabel': 'Rutina actual',
+  'home.greeting': 'Hola {name}',
   'home.noRoutine': 'Todavía no hay rutina',
   'home.noRoutineBody':
     'Crea tu primera rutina y márcala como actual. Después tus entrenamientos y récords van a aparecer aquí.',
@@ -345,6 +356,7 @@ export const es: Record<TranslationKey, string> = {
   'routines.makeCurrent': 'Marcar como actual',
   'routines.sessionCount': '{count} sesiones',
   'routines.open': 'Abrir',
+  'routines.manage': 'Gestionar',
 
   'routine.sessions': 'Sesiones',
   'routine.noSessions': 'Esta rutina no tiene sesiones',
@@ -433,6 +445,10 @@ export const es: Record<TranslationKey, string> = {
   'stats.search': 'Buscar un ejercicio',
 
   'settings.title': 'Configuración',
+  'settings.profile': 'Perfil',
+  'settings.profileNote': 'Tu nombre y correo vienen de tu cuenta.',
+  'settings.preferences': 'Preferencias',
+  'settings.saveFailed': 'No se pudo acceder a tu configuración.',
   'settings.timer': 'Timer de intervalos',
   'settings.prep': 'Prep (seg)',
   'settings.work': 'Work (seg)',
