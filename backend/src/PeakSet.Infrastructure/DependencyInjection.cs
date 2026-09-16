@@ -17,6 +17,7 @@ public static class DependencyInjection
 		services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 		services.AddScoped<IAuthService, AuthService>();
 		services.AddScoped<IEmailSender, LoggingEmailSender>();
+		services.AddScoped<IBackupService, BackupService>();
 		services.AddScoped<IRoutineRepository, EfRoutineRepository>();
 		services.AddScoped<IWorkoutRepository, EfWorkoutRepository>();
 		services.AddScoped<IUserSettingsRepository, EfUserSettingsRepository>();
