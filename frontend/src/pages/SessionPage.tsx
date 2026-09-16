@@ -1,23 +1,25 @@
 import { useState } from 'react'
-import { fetchRoutine, type Session } from '../api/routines'
-import type { ExerciseType, Laterality } from '../api/types'
+import { History, LineChart, Plus, Trash2, X } from 'lucide-react'
+import { fetchRoutine, type Session } from '@/api/routines'
+import type { ExerciseType, Laterality } from '@/api/types'
+import { createWorkout, type WorkoutRequest } from '@/api/workouts'
+import { useAuth } from '@/auth/context'
 import {
-  createWorkout,
-  fetchWorkouts,
-  type PagedResult,
-  type Workout,
-  type WorkoutRequest,
-} from '../api/workouts'
-import { useAuth } from '../auth/context'
-import { ErrorList, LoadingState } from '../components/Feedback'
-import { IntervalTimer } from '../components/IntervalTimer'
-import { ScreenHeader } from '../components/ScreenHeader'
-import { useApiQuery } from '../hooks/useApiQuery'
-import { useI18n } from '../i18n/context'
-import { useNavigation } from '../navigation/context'
-import { useSettings } from '../settings/context'
-import type { WeightUnit } from '../settings/types'
-import { fromKilograms, toKilograms } from '../utils/units'
+  ExerciseInsightSheet,
+  type InsightView,
+} from '@/components/ExerciseInsightSheet'
+import { FloatingTimer } from '@/components/FloatingTimer'
+import { PageHeader } from '@/components/PageHeader'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useApiQuery } from '@/hooks/useApiQuery'
+import { describeApiError } from '@/i18n/apiErrors'
+import { useI18n } from '@/i18n/context'
+import { useNavigation } from '@/navigation/context'
+import { useSettings } from '@/settings/context'
+import { toKilograms } from '@/utils/units'
 
 type DraftSet = {
   reps: string
@@ -31,13 +33,7 @@ type DraftExercise = {
   sets: DraftSet[]
 }
 
-type PreviousSet = {
-  reps: number
-  weight: number
-}
-
-const defaultSetCount = 3
-const recentWorkoutCount = 20
+const firstSetCount = 1
 
 type SessionPageProps = {
   routineId: string
@@ -46,28 +42,30 @@ type SessionPageProps = {
 }
 
 export function SessionPage({ routineId, sessionId, sessionName }: SessionPageProps) {
+  const { t } = useI18n()
   const detail = useApiQuery(`routine:${routineId}`, (token) => fetchRoutine(token, routineId))
-  const recent = useApiQuery('workouts:recent', (token) =>
-    fetchWorkouts(token, 1, recentWorkoutCount),
-  )
   const session = detail.data?.sessions.find((entry) => entry.id === sessionId) ?? null
-  const error = detail.error ?? recent.error
 
-  if (error !== null) {
+  if (detail.error !== null) {
     return (
-      <>
-        <ScreenHeader title={sessionName} />
-        <ErrorList error={error} />
-      </>
+      <PageHeader title={sessionName}>
+        {describeApiError(detail.error, t).map((message) => (
+          <p
+            key={message}
+            className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {message}
+          </p>
+        ))}
+      </PageHeader>
     )
   }
 
-  if (!session || recent.data === null) {
+  if (!session) {
     return (
-      <>
-        <ScreenHeader title={sessionName} />
-        <LoadingState />
-      </>
+      <PageHeader title={sessionName}>
+        <Skeleton className="h-40 w-full rounded-xl" />
+      </PageHeader>
     )
   }
 
@@ -77,74 +75,36 @@ export function SessionPage({ routineId, sessionId, sessionName }: SessionPagePr
       routineId={routineId}
       routineName={detail.data?.name ?? ''}
       session={session}
-      previousSets={buildPreviousSets(recent.data)}
     />
   )
 }
 
-/**
- * Walks the most recent workouts (newest first) and keeps the last sets used for
- * each exercise name, so the lifter does not retype last week's numbers.
- */
-function buildPreviousSets(result: PagedResult<Workout>): Map<string, PreviousSet[]> {
-  const previous = new Map<string, PreviousSet[]>()
-
-  for (const workout of result.items) {
-    for (const exercise of workout.exercises) {
-      if (!previous.has(exercise.name)) {
-        previous.set(
-          exercise.name,
-          exercise.sets.map((set) => ({ reps: set.reps, weight: set.weight })),
-        )
-      }
-    }
-  }
-
-  return previous
-}
-
-function buildDraft(
-  session: Session,
-  previousSets: Map<string, PreviousSet[]>,
-  unit: WeightUnit,
-): DraftExercise[] {
-  return session.exercises.map((exercise) => {
-    const previous = previousSets.get(exercise.name)
-
-    return {
-      name: exercise.name,
-      exerciseType: exercise.exerciseType,
-      laterality: exercise.laterality,
-      sets:
-        previous && previous.length > 0
-          ? previous.map((set) => ({
-              reps: String(set.reps),
-              weight: String(fromKilograms(set.weight, unit)),
-            }))
-          : Array.from({ length: defaultSetCount }, () => ({ reps: '', weight: '' })),
-    }
-  })
-}
-
-type SessionRunnerProps = {
+function SessionRunner({
+  routineId,
+  routineName,
+  session,
+}: {
   routineId: string
   routineName: string
   session: Session
-  previousSets: Map<string, PreviousSet[]>
-}
-
-function SessionRunner({ routineId, routineName, session, previousSets }: SessionRunnerProps) {
+}) {
   const { t } = useI18n()
   const { token } = useAuth()
   const { navigate } = useNavigation()
   const { settings } = useSettings()
   const [draft, setDraft] = useState<DraftExercise[]>(() =>
-    buildDraft(session, previousSets, settings.unit),
+    session.exercises.map((exercise) => ({
+      name: exercise.name,
+      exerciseType: exercise.exerciseType,
+      laterality: exercise.laterality,
+      sets: Array.from({ length: firstSetCount }, () => ({ reps: '', weight: '' })),
+    })),
   )
+  const [insight, setInsight] = useState<{ name: string; view: InsightView } | null>(null)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<unknown>(null)
+  const [failure, setFailure] = useState<unknown | null>(null)
 
-  function updateSet(exerciseIndex: number, setIndex: number, patch: Partial<DraftSet>) {
+  function changeSet(exerciseIndex: number, setIndex: number, patch: Partial<DraftSet>) {
     setDraft((current) =>
       current.map((exercise, index) =>
         index === exerciseIndex
@@ -179,7 +139,7 @@ function SessionRunner({ routineId, routineName, session, previousSets }: Sessio
     )
   }
 
-  const filledExercises = draft
+  const filled = draft
     .map((exercise) => ({
       name: exercise.name,
       exerciseType: exercise.exerciseType,
@@ -195,19 +155,19 @@ function SessionRunner({ routineId, routineName, session, previousSets }: Sessio
 
   async function handleSave() {
     setSaving(true)
-    setError(null)
+    setFailure(null)
     try {
       const payload: WorkoutRequest = {
         routineId,
         routineName,
         sessionName: session.name,
         workoutDate: new Date().toISOString(),
-        exercises: filledExercises,
+        exercises: filled,
       }
       await createWorkout(token, payload)
       navigate({ name: 'history' })
     } catch (cause) {
-      setError(cause)
+      setFailure(cause)
     } finally {
       setSaving(false)
     }
@@ -215,94 +175,153 @@ function SessionRunner({ routineId, routineName, session, previousSets }: Sessio
 
   return (
     <>
-      <ScreenHeader title={session.name} subtitle={routineName} />
+      <PageHeader
+        title={session.name}
+        subtitle={routineName}
+        onBack={() => navigate({ name: 'train' })}
+      />
 
-      <IntervalTimer config={settings} />
-
-      {error !== null && <ErrorList error={error} />}
-
-      {draft.length === 0 && <p className="list-row-meta">{t('train.noExercises')}</p>}
-
-      <div className="card-list">
-        {draft.map((exercise, exerciseIndex) => (
-          <article key={exercise.name} className="card session-card">
-            <h2 className="list-row-title">{exercise.name}</h2>
-            <p className="list-row-meta">
-              {t(`exerciseType.${exercise.exerciseType}`)} · {t(`laterality.${exercise.laterality}`)}
+      <div className="grid gap-4 pb-28">
+        {failure !== null &&
+          describeApiError(failure, t).map((message) => (
+            <p
+              key={message}
+              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {message}
             </p>
+          ))}
 
-            <div className="set-table">
-              <span className="set-head">{t('train.set')}</span>
-              <span className="set-head">{t('train.reps')}</span>
-              <span className="set-head">
-                {t('train.weight')} ({settings.unit})
-              </span>
-              <span />
-              {exercise.sets.map((set, setIndex) => (
-                <SetRow
-                  key={setIndex}
-                  index={setIndex}
-                  set={set}
-                  onChange={(patch) => updateSet(exerciseIndex, setIndex, patch)}
-                  onRemove={() => removeSet(exerciseIndex, setIndex)}
-                />
-              ))}
-            </div>
+        {draft.length === 0 && (
+          <p className="text-sm text-muted-foreground">{t('train.noExercises')}</p>
+        )}
 
-            <button className="btn btn-ghost" type="button" onClick={() => addSet(exerciseIndex)}>
-              {t('train.addSet')}
-            </button>
-          </article>
+        {draft.map((exercise, exerciseIndex) => (
+          <Card key={exercise.name}>
+            <CardContent className="grid gap-4 pt-6">
+              <div className="grid gap-1">
+                <h2 className="font-semibold leading-tight">{exercise.name}</h2>
+                <p className="text-xs text-muted-foreground">
+                  {t(`exerciseType.${exercise.exerciseType}`)} ·{' '}
+                  {t(`laterality.${exercise.laterality}`)}
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setInsight({ name: exercise.name, view: 'history' })}
+                >
+                  <History className="size-4" />
+                  {t('menu.history')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setInsight({ name: exercise.name, view: 'chart' })}
+                >
+                  <LineChart className="size-4" />
+                  {t('menu.stats')}
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-[2rem_1fr_1fr_2rem] items-center gap-2">
+                <span className="text-[0.7rem] font-semibold uppercase text-muted-foreground">
+                  {t('train.set')}
+                </span>
+                <span className="text-[0.7rem] font-semibold uppercase text-muted-foreground">
+                  {t('train.reps')}
+                </span>
+                <span className="text-[0.7rem] font-semibold uppercase text-muted-foreground">
+                  {t('train.weight')} ({settings.unit})
+                </span>
+                <span />
+
+                {exercise.sets.map((set, setIndex) => (
+                  <SetRow
+                    key={setIndex}
+                    index={setIndex}
+                    set={set}
+                    onChange={(patch) => changeSet(exerciseIndex, setIndex, patch)}
+                    onRemove={() => removeSet(exerciseIndex, setIndex)}
+                  />
+                ))}
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-fit"
+                onClick={() => addSet(exerciseIndex)}
+              >
+                <Plus className="size-4" />
+                {t('train.addSet')}
+              </Button>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      {draft.length > 0 && (
-        <div className="button-row sticky-actions">
-          <button
-            className="btn btn-primary"
-            type="button"
-            disabled={saving || filledExercises.length === 0}
-            onClick={() => void handleSave()}
-          >
-            {saving ? t('train.saving') : t('train.save')}
-          </button>
-        </div>
-      )}
+      <div className="pointer-events-none fixed inset-x-0 bottom-28 z-20 px-4 md:bottom-20">
+        <Button
+          size="lg"
+          className="pointer-events-auto mx-auto flex h-12 w-full max-w-md"
+          disabled={saving || filled.length === 0}
+          onClick={() => void handleSave()}
+        >
+          {saving ? t('train.saving') : t('train.save')}
+        </Button>
+      </div>
+
+      <FloatingTimer />
+      <ExerciseInsightSheet exercise={insight} onClose={() => setInsight(null)} />
     </>
   )
 }
 
-type SetRowProps = {
+function SetRow({
+  index,
+  set,
+  onChange,
+  onRemove,
+}: {
   index: number
   set: DraftSet
   onChange: (patch: Partial<DraftSet>) => void
   onRemove: () => void
-}
-
-function SetRow({ index, set, onChange, onRemove }: SetRowProps) {
+}) {
   return (
     <>
-      <span className="set-number">{index + 1}</span>
-      <input
-        className="field-input"
+      <span className="text-center text-sm font-semibold tabular-nums text-muted-foreground">
+        {index + 1}
+      </span>
+      <Input
         type="number"
         inputMode="numeric"
         min={0}
+        className="h-11 text-center"
         value={set.reps}
         onChange={(event) => onChange({ reps: event.target.value })}
       />
-      <input
-        className="field-input"
+      <Input
         type="number"
         inputMode="decimal"
         min={0}
         step="0.5"
+        className="h-11 text-center"
         value={set.weight}
         onChange={(event) => onChange({ weight: event.target.value })}
       />
-      <button className="btn btn-ghost" type="button" onClick={onRemove}>
-        ✕
-      </button>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="size-8 text-muted-foreground"
+        aria-label="remove"
+        onClick={onRemove}
+      >
+        {index === 0 ? <X className="size-4" /> : <Trash2 className="size-4" />}
+      </Button>
     </>
   )
 }
