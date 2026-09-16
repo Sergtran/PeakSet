@@ -1,16 +1,28 @@
 import { useState, type FormEvent } from 'react'
+import { Loader2 } from 'lucide-react'
 import {
   login,
   register,
   requestPasswordReset,
   resetPassword,
   type AuthResponse,
-} from '../api/auth'
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
-import { describeApiError } from '../i18n/apiErrors'
-import { useI18n } from '../i18n/context'
+} from '@/api/auth'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { describeApiError } from '@/i18n/apiErrors'
+import { useI18n } from '@/i18n/context'
 
-type Mode = 'signin' | 'signup' | 'reset'
+type Mode = 'signin' | 'signup'
 
 type LoginPageProps = {
   onAuthenticated: (session: AuthResponse) => void
@@ -24,6 +36,7 @@ export function LoginPage({ onAuthenticated }: LoginPageProps) {
   const [displayName, setDisplayName] = useState('')
   const [resetToken, setResetToken] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [isResetting, setIsResetting] = useState(false)
   const [resetRequested, setResetRequested] = useState(false)
   const [failure, setFailure] = useState<unknown | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -31,10 +44,11 @@ export function LoginPage({ onAuthenticated }: LoginPageProps) {
 
   const errors = failure !== null ? describeApiError(failure, t) : []
 
-  function switchMode(next: Mode) {
+  function changeMode(next: Mode) {
     setMode(next)
     setFailure(null)
     setMessage(null)
+    setIsResetting(false)
     setResetRequested(false)
   }
 
@@ -45,36 +59,33 @@ export function LoginPage({ onAuthenticated }: LoginPageProps) {
     setIsSubmitting(true)
 
     try {
-      if (mode === 'signin') {
-        onAuthenticated(await login({ email: email.trim(), password }))
-        return
-      }
-
-      if (mode === 'signup') {
-        onAuthenticated(
-          await register({
-            email: email.trim(),
-            password,
-            displayName: displayName.trim() || null,
-          }),
-        )
-        return
-      }
-
-      if (!resetRequested) {
+      if (isResetting && !resetRequested) {
         await requestPasswordReset({ email: email.trim() })
         setResetRequested(true)
         return
       }
 
-      await resetPassword({
-        email: email.trim(),
-        token: resetToken.trim(),
-        newPassword,
-      })
-      switchMode('signin')
-      setPassword('')
-      setMessage(t('auth.passwordChanged'))
+      if (isResetting) {
+        await resetPassword({ email: email.trim(), token: resetToken.trim(), newPassword })
+        setIsResetting(false)
+        setResetRequested(false)
+        setPassword('')
+        setResetToken('')
+        setNewPassword('')
+        setMessage(t('auth.passwordChanged'))
+        return
+      }
+
+      const session =
+        mode === 'signin'
+          ? await login({ email: email.trim(), password })
+          : await register({
+              email: email.trim(),
+              password,
+              displayName: displayName.trim() || null,
+            })
+
+      onAuthenticated(session)
     } catch (cause) {
       setFailure(cause)
     } finally {
@@ -84,158 +95,179 @@ export function LoginPage({ onAuthenticated }: LoginPageProps) {
 
   const submitLabel = isSubmitting
     ? t('auth.pleaseWait')
-    : mode === 'signin'
-      ? t('auth.signIn')
-      : mode === 'signup'
-        ? t('auth.createAccount')
-        : resetRequested
-          ? t('auth.changePassword')
-          : t('auth.sendResetLink')
+    : isResetting
+      ? resetRequested
+        ? t('auth.changePassword')
+        : t('auth.sendResetLink')
+      : mode === 'signin'
+        ? t('auth.signIn')
+        : t('auth.createAccount')
 
   return (
-    <main className="auth-screen">
-      <section className="card auth-card">
-        <header className="auth-header">
-          <img className="brand-mark" src="/logo-192.png" alt="" width={56} height={56} />
-          <div className="auth-header-text">
-            <h1 className="brand-name">{t('app.name')}</h1>
-            <p className="brand-tagline">{t('app.tagline')}</p>
-          </div>
-          <LanguageSwitcher />
-        </header>
-
-        {mode === 'reset' ? (
-          <div className="reset-header">
-            <h2 className="empty-title">{t('auth.resetTitle')}</h2>
-            <button type="button" className="link-button" onClick={() => switchMode('signin')}>
-              {t('auth.backToSignIn')}
-            </button>
-          </div>
-        ) : (
-          <div className="tabs" role="tablist" aria-label="Authentication mode">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'signin'}
-              className={mode === 'signin' ? 'tab tab-active' : 'tab'}
-              onClick={() => switchMode('signin')}
-            >
-              {t('auth.tabSignIn')}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'signup'}
-              className={mode === 'signup' ? 'tab tab-active' : 'tab'}
-              onClick={() => switchMode('signup')}
-            >
-              {t('auth.tabSignUp')}
-            </button>
-          </div>
-        )}
-
-        <form className="form" onSubmit={handleSubmit}>
-          {mode === 'signup' && (
-            <label className="field">
-              <span className="field-label">{t('auth.name')}</span>
-              <input
-                className="field-input"
-                type="text"
-                name="displayName"
-                autoComplete="name"
-                maxLength={100}
-                placeholder={t('auth.namePlaceholder')}
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-              />
-            </label>
-          )}
-
-          <label className="field">
-            <span className="field-label">{t('auth.email')}</span>
-            <input
-              className="field-input"
-              type="email"
-              name="email"
-              autoComplete="email"
-              required
-              placeholder={t('auth.emailPlaceholder')}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+    <div className="grid min-h-svh place-items-center bg-background p-5">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <img
+              src="/logo-192.png"
+              alt=""
+              width={48}
+              height={48}
+              className="size-12 rounded-xl"
             />
-          </label>
+            <LanguageSwitcher className="w-auto" />
+          </div>
+          <CardTitle className="text-2xl">{t('app.name')}</CardTitle>
+          <CardDescription>{t('app.tagline')}</CardDescription>
+        </CardHeader>
 
-          {mode !== 'reset' && (
-            <label className="field">
-              <span className="field-label">{t('auth.password')}</span>
-              <input
-                className="field-input"
-                type="password"
-                name="password"
-                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                required
-                minLength={6}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-              {mode === 'signup' && <span className="field-hint">{t('auth.passwordHint')}</span>}
-            </label>
+        <CardContent className="grid gap-5">
+          {!isResetting && (
+            <Tabs value={mode} onValueChange={(value) => changeMode(value as Mode)}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">{t('auth.tabSignIn')}</TabsTrigger>
+                <TabsTrigger value="signup">{t('auth.tabSignUp')}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="signin" />
+              <TabsContent value="signup" />
+            </Tabs>
           )}
 
-          {mode === 'reset' && resetRequested && (
-            <>
-              <p className="alert alert-ok">{t('auth.resetSent')}</p>
+          {isResetting && (
+            <div className="grid gap-1">
+              <h2 className="text-lg font-semibold">{t('auth.resetTitle')}</h2>
+              <Button
+                variant="link"
+                className="h-auto w-fit p-0"
+                onClick={() => {
+                  setIsResetting(false)
+                  setResetRequested(false)
+                  setFailure(null)
+                }}
+              >
+                {t('auth.backToSignIn')}
+              </Button>
+            </div>
+          )}
 
-              <label className="field">
-                <span className="field-label">{t('auth.resetToken')}</span>
-                <input
-                  className="field-input"
-                  name="resetToken"
-                  required
-                  placeholder={t('auth.resetTokenPlaceholder')}
-                  value={resetToken}
-                  onChange={(event) => setResetToken(event.target.value)}
+          <form className="grid gap-4" onSubmit={handleSubmit}>
+            {mode === 'signup' && !isResetting && (
+              <div className="grid gap-2">
+                <Label htmlFor="displayName">{t('auth.name')}</Label>
+                <Input
+                  id="displayName"
+                  autoComplete="name"
+                  maxLength={100}
+                  placeholder={t('auth.namePlaceholder')}
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
                 />
-              </label>
+              </div>
+            )}
 
-              <label className="field">
-                <span className="field-label">{t('auth.newPassword')}</span>
-                <input
-                  className="field-input"
+            <div className="grid gap-2">
+              <Label htmlFor="email">{t('auth.email')}</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                placeholder={t('auth.emailPlaceholder')}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </div>
+
+            {!isResetting && (
+              <div className="grid gap-2">
+                <Label htmlFor="password">{t('auth.password')}</Label>
+                <Input
+                  id="password"
                   type="password"
-                  name="newPassword"
-                  autoComplete="new-password"
+                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
                   required
                   minLength={6}
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                 />
-                <span className="field-hint">{t('auth.passwordHint')}</span>
-              </label>
-            </>
-          )}
+                {mode === 'signup' && (
+                  <p className="text-xs text-muted-foreground">{t('auth.passwordHint')}</p>
+                )}
+              </div>
+            )}
 
-          {message !== null && <p className="alert alert-ok">{message}</p>}
+            {isResetting && resetRequested && (
+              <>
+                <p className="rounded-md border border-primary/30 bg-accent px-3 py-2 text-sm text-accent-foreground">
+                  {t('auth.resetSent')}
+                </p>
 
-          {errors.length > 0 && (
-            <ul className="alert alert-error" role="alert">
-              {errors.map((text) => (
-                <li key={text}>{text}</li>
-              ))}
-            </ul>
-          )}
+                <div className="grid gap-2">
+                  <Label htmlFor="resetToken">{t('auth.resetToken')}</Label>
+                  <Input
+                    id="resetToken"
+                    required
+                    placeholder={t('auth.resetTokenPlaceholder')}
+                    value={resetToken}
+                    onChange={(event) => setResetToken(event.target.value)}
+                  />
+                </div>
 
-          <button className="btn btn-primary" type="submit" disabled={isSubmitting}>
-            {submitLabel}
-          </button>
+                <div className="grid gap-2">
+                  <Label htmlFor="newPassword">{t('auth.newPassword')}</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(event) => setNewPassword(event.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">{t('auth.passwordHint')}</p>
+                </div>
+              </>
+            )}
 
-          {mode === 'signin' && (
-            <button type="button" className="link-button" onClick={() => switchMode('reset')}>
-              {t('auth.forgotPassword')}
-            </button>
-          )}
-        </form>
-      </section>
-    </main>
+            {message !== null && (
+              <p className="rounded-md border border-primary/30 bg-accent px-3 py-2 text-sm text-accent-foreground">
+                {message}
+              </p>
+            )}
+
+            {errors.length > 0 && (
+              <ul
+                role="alert"
+                className="grid gap-1 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              >
+                {errors.map((text) => (
+                  <li key={text}>{text}</li>
+                ))}
+              </ul>
+            )}
+
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+              {submitLabel}
+            </Button>
+
+            {!isResetting && mode === 'signin' && (
+              <Button
+                type="button"
+                variant="link"
+                className="h-auto w-fit self-center p-0"
+                onClick={() => {
+                  setIsResetting(true)
+                  setFailure(null)
+                  setMessage(null)
+                }}
+              >
+                {t('auth.forgotPassword')}
+              </Button>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

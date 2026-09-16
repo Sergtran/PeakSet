@@ -1,26 +1,38 @@
-import { useI18n } from '../i18n/context'
-import { languages, type Language, type TranslationKey } from '../i18n/translations'
+import { Languages } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useI18n } from '@/i18n/context'
+import type { Language } from '@/i18n/translations'
 
-const labelKeys: Record<Language, TranslationKey> = {
-  en: 'language.en',
-  es: 'language.es',
+const names: Record<Language, string> = {
+  en: 'English',
+  es: 'Español',
 }
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ className }: { className?: string }) {
   const { language, setLanguage, t } = useI18n()
 
   return (
-    <select
-      className="language-select"
-      aria-label={t('language.label')}
+    <Select
       value={language}
-      onChange={(event) => setLanguage(event.target.value as Language)}
+      onValueChange={(next) => setLanguage(next as Language)}
     >
-      {languages.map((code) => (
-        <option key={code} value={code}>
-          {t(labelKeys[code])}
-        </option>
-      ))}
-    </select>
+      <SelectTrigger className={className} aria-label={t('language.label')}>
+        <Languages className="size-4 text-muted-foreground" />
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {(Object.keys(names) as Language[]).map((code) => (
+          <SelectItem key={code} value={code}>
+            {names[code]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }
