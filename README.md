@@ -7,7 +7,7 @@
 [![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Azure App Service](https://img.shields.io/badge/Azure-App%20Service-0078D4?logo=microsoftazure)](https://azure.microsoft.com/)
 
-![Liftraza](assets/logo-512.png)
+![Liftraza](assets/logo-300.png)
 
 ## Overview
 
