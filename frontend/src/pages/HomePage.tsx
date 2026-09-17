@@ -3,7 +3,7 @@ import { fetchHome } from '@/api/home'
 import { fetchRoutines } from '@/api/routines'
 import { useAuth } from '@/auth/context'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { describeApiError } from '@/i18n/apiErrors'
 import { useI18n } from '@/i18n/context'
@@ -21,10 +21,9 @@ export function HomePage() {
 
   return (
     <div className="grid gap-6">
-      <header className="grid gap-1">
-        <p className="text-sm text-muted-foreground">{t('home.greeting', { name: firstName })}</p>
+      <header>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {routine ? routine.name : t('home.noRoutine')}
+          {t('home.greeting', { name: firstName })}
         </h1>
       </header>
 
@@ -43,7 +42,8 @@ export function HomePage() {
       {!home.isLoading && home.error === null && routine && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">{t('home.currentRoutineLabel')}</CardTitle>
+            <CardDescription>{t('home.currentRoutineLabel')}</CardDescription>
+            <CardTitle className="text-xl">{routine.name}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-5">
             <dl className="grid grid-cols-3 gap-3 text-center">
