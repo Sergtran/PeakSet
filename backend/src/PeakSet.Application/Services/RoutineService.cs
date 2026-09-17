@@ -22,17 +22,23 @@ public sealed class RoutineService : IRoutineService
 		var routine = new Routine(userId, new Name(name));
 		await _repository.AddAsync(routine, ct);
 
-		return new RoutineDto(routine.Id, routine.Name.Value, routine.CreatedAt);
+		return new RoutineDto(routine.Id, routine.Name.Value, routine.CreatedAt, null);
 	}
 
 	public async Task<IReadOnlyList<RoutineDto>> GetRoutinesAsync(
 		string userId, CancellationToken ct = default)
 	{
 		var routines = await _repository.GetByUserAsync(userId, ct);
+		var lastUsed = await _repository.GetLastUsedDatesAsync(userId, ct);
 
 		return routines
-			.OrderBy(r => r.CreatedAt)
-			.Select(r => new RoutineDto(r.Id, r.Name.Value, r.CreatedAt))
+			.OrderByDescending(r => lastUsed.TryGetValue(r.Id, out var used) ? used : DateTime.MinValue)
+			.ThenByDescending(r => r.CreatedAt)
+			.Select(r => new RoutineDto(
+				r.Id,
+				r.Name.Value,
+				r.CreatedAt,
+				lastUsed.TryGetValue(r.Id, out var used) ? used : null))
 			.ToList();
 	}
 
@@ -42,7 +48,7 @@ public sealed class RoutineService : IRoutineService
 		var routine = await _repository.GetByIdAsync(userId, id, ct)
 			?? throw new NotFoundException("Routine not found.");
 
-		return new RoutineDto(routine.Id, routine.Name.Value, routine.CreatedAt);
+		return new RoutineDto(routine.Id, routine.Name.Value, routine.CreatedAt, null);
 	}
 
 	private async Task<string> GetUniqueNameAsync(
@@ -114,7 +120,7 @@ public sealed class RoutineService : IRoutineService
 		routine.Rename(new Name(name));
 		await _repository.UpdateAsync(routine, ct);
 
-		return new RoutineDto(routine.Id, routine.Name.Value, routine.CreatedAt);
+		return new RoutineDto(routine.Id, routine.Name.Value, routine.CreatedAt, null);
 	}
 
 	public async Task<SessionDto> RenameSessionAsync(

@@ -208,6 +208,9 @@ export const en = {
   'stats.activeSince': 'Active since',
   'stats.sinceActive': 'Workouts on this run',
   'stats.totalAllTime': '{count} workouts with this routine in total',
+  'stats.lowest': 'Lowest',
+  'stats.highest': 'Highest',
+  'stats.timelineNote': 'One point per session. The line follows the heaviest set of each day.',
 
   'settings.title': 'Settings',
   'settings.profile': 'Profile',
@@ -455,6 +458,9 @@ export const es: Record<TranslationKey, string> = {
   'stats.activeSince': 'Activa desde',
   'stats.sinceActive': 'Entrenamientos en esta racha',
   'stats.totalAllTime': '{count} entrenamientos en total con esta rutina',
+  'stats.lowest': 'Más bajo',
+  'stats.highest': 'Más alto',
+  'stats.timelineNote': 'Un punto por sesión. La línea sigue la serie más pesada de cada día.',
 
   'settings.title': 'Configuración',
   'settings.profile': 'Perfil',

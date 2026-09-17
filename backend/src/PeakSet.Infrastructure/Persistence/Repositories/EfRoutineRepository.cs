@@ -54,6 +54,15 @@ public sealed class EfRoutineRepository : IRoutineRepository
 		await _db.SaveChangesAsync(ct);
 	}
 
+	public async Task<IReadOnlyDictionary<Guid, DateTime>> GetLastUsedDatesAsync(
+		string userId, CancellationToken ct = default)
+		=> await _db.Workouts
+			.AsNoTracking()
+			.Where(w => w.UserId == userId && w.RoutineId != null)
+			.GroupBy(w => w.RoutineId!.Value)
+			.Select(g => new { RoutineId = g.Key, Last = g.Max(w => w.WorkoutDate) })
+			.ToDictionaryAsync(x => x.RoutineId, x => x.Last, ct);
+
 	public async Task<IReadOnlyList<Routine>> GetByUserWithSessionsAsync(
 	string userId, CancellationToken ct = default)
 	=> await _db.Routines

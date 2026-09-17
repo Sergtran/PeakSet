@@ -12,4 +12,7 @@ public interface IRoutineRepository
 	Task UpdateAsync(Routine routine, CancellationToken ct = default);
 	Task DeleteAsync(Routine routine, CancellationToken ct = default);
 	Task<IReadOnlyList<Routine>> GetByUserWithSessionsAsync(string userId, CancellationToken ct = default);
+
+	Task<IReadOnlyDictionary<Guid, DateTime>> GetLastUsedDatesAsync(
+		string userId, CancellationToken ct = default);
 }
