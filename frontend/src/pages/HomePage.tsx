@@ -52,9 +52,16 @@ export function HomePage() {
                 value={routine.activeSince ? formatDay(routine.activeSince, language) : '—'}
                 label={t('stats.activeSince')}
               />
-              <Metric value={String(routine.workoutsSinceActive)} label={t('stats.workouts')} />
               <Metric
-                value={routine.weeksSinceActive === 0 ? '—' : String(routine.weeksSinceActive)}
+                value={
+                  routine.workoutsSinceActive === undefined
+                    ? '—'
+                    : String(routine.workoutsSinceActive)
+                }
+                label={t('stats.workouts')}
+              />
+              <Metric
+                value={routine.weeksSinceActive ? String(routine.weeksSinceActive) : '—'}
                 label={t('stats.weeks')}
               />
             </dl>
