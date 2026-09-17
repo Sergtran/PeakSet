@@ -1,0 +1,14 @@
+﻿using Liftraza.Domain.Enums;
+namespace Liftraza.Application.Dtos;
+
+public record ExerciseSummary(
+	string Name,
+	int SessionCount,
+	DateTime LastUsed);
+
+public record ExerciseSessionRow(
+	DateTime WorkoutDate,
+	ExerciseType ExerciseType,
+	Laterality Laterality,
+	PrStatus? PrStatus,
+	IReadOnlyList<(int Reps, decimal Weight)> Sets);

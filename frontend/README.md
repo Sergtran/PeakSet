@@ -1,11 +1,11 @@
-# PeakSet Web
+# Liftraza Web
 
-React + TypeScript single page application for PeakSet.
+React + TypeScript single page application for Liftraza.
 
 ## Requirements
 
 - Node.js 20 or newer
-- The PeakSet API reachable at `https://peakset-api.azurewebsites.net`
+- The Liftraza API reachable at `https://peakset-api.azurewebsites.net`
 
 ## Getting started
 

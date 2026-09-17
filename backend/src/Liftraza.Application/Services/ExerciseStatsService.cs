@@ -1,0 +1,89 @@
+using Liftraza.Application.Abstractions;
+using Liftraza.Application.Abstractions.Repositories;
+using Liftraza.Application.Dtos;
+using Liftraza.Domain.Enums;
+
+namespace Liftraza.Application.Services;
+
+public sealed class ExerciseStatsService : IExerciseStatsService
+{
+	private readonly IWorkoutRepository _workoutRepository;
+	private readonly IExerciseCatalogRepository _catalogRepository;
+
+	public ExerciseStatsService(
+		IWorkoutRepository workoutRepository,
+		IExerciseCatalogRepository catalogRepository)
+	{
+		_workoutRepository = workoutRepository;
+		_catalogRepository = catalogRepository;
+	}
+
+	public async Task<IReadOnlyList<ExerciseCatalogDto>> GetCatalogAsync(CancellationToken ct = default)
+	{
+		var entries = await _catalogRepository.GetAllAsync(ct);
+
+		return entries
+			.Select(entry => new ExerciseCatalogDto(
+				entry.Name.Value, entry.ExerciseType, entry.DefaultLaterality))
+			.ToList();
+	}
+
+	public async Task<IReadOnlyList<ExerciseSummaryDto>> GetExercisesAsync(
+		string userId, CancellationToken ct = default)
+	{
+		var exercises = await _workoutRepository.GetUserExercisesAsync(userId, ct);
+
+		return exercises
+			.Select(e => new ExerciseSummaryDto(e.Name, e.SessionCount, e.LastUsed))
+			.ToList();
+	}
+
+	public async Task<ExerciseProgressDto?> GetProgressAsync(
+		string userId, string exerciseName, CancellationToken ct = default)
+	{
+		var sessions = await _workoutRepository.GetExerciseSessionRowsAsync(userId, exerciseName, ct);
+		if (sessions.Count == 0)
+			return null;
+
+		var ordered = sessions
+			.Select(s => (Session: s, Best: BestSet(s.Sets, s.ExerciseType)))
+			.OrderBy(x => x.Session.WorkoutDate)
+			.ToList();
+
+		var allSets = sessions.SelectMany(s => s.Sets).ToList();
+
+		return new ExerciseProgressDto(
+			exerciseName,
+			sessions.Count,
+			allSets.Count,
+			allSets.Count > 0 ? allSets.Max(s => s.Weight) : null,
+			allSets.Count > 0 ? allSets.Max(s => s.Reps) : null,
+			ordered.First().Session.WorkoutDate,
+			ordered.Last().Session.WorkoutDate,
+			ordered
+				.Select(p => new ProgressPointDto(
+					p.Session.WorkoutDate,
+					p.Best.Weight,
+					p.Best.Reps,
+					p.Session.PrStatus))
+				.ToList());
+	}
+
+	private static (decimal? Weight, int? Reps) BestSet(
+		IReadOnlyList<(int Reps, decimal Weight)> sets, ExerciseType type)
+	{
+		if (sets.Count == 0)
+			return (null, null);
+
+		// Bodyweight: the metric is reps. Otherwise: weight (for time exercises, weight = seconds of work);
+		// if weights tie, the one with more reps wins.
+		if (type == ExerciseType.Bodyweight)
+		{
+			var maxReps = sets.Max(s => s.Reps);
+			return (null, maxReps);
+		}
+
+		var best = sets.OrderByDescending(s => s.Weight).ThenByDescending(s => s.Reps).First();
+		return (best.Weight, best.Reps);
+	}
+}

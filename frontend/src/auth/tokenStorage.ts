@@ -1,6 +1,6 @@
-const TOKEN_KEY = 'peakset.token'
-const PROFILE_KEY = 'peakset.profile'
-const LANGUAGE_KEY = 'peakset.language'
+const TOKEN_KEY = 'liftraza.token'
+const PROFILE_KEY = 'liftraza.profile'
+const LANGUAGE_KEY = 'liftraza.language'
 
 export type Profile = {
   email: string

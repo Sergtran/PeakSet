@@ -1,0 +1,14 @@
+namespace Liftraza.Application.Dtos;
+
+public record RoutineOverviewDto(
+    Guid RoutineId,
+    string Name,
+    int WorkoutCount,
+    DateTime? FirstWorkoutDate,
+    DateTime? LastWorkoutDate,
+    int DaysSinceLastWorkout,
+    int WeeksInUse,
+    int PrCount,
+    DateTime? ActiveSince,
+    int WorkoutsSinceActive,
+    int WeeksSinceActive);

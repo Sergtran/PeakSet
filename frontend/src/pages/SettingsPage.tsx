@@ -1,6 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { Download, LogOut, Upload, User } from 'lucide-react'
-import { exportData, importData, type PeakSetExport } from '@/api/data'
+import { exportData, importData, type LiftrazaExport } from '@/api/data'
 import { useAuth } from '@/auth/context'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { Button } from '@/components/ui/button'
@@ -41,7 +41,7 @@ export function SettingsPage() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `peakset-${todayKey()}.json`
+      link.download = `liftraza-${todayKey()}.json`
       link.click()
       URL.revokeObjectURL(url)
       setNotice(t('data.exported'))
@@ -71,7 +71,7 @@ export function SettingsPage() {
     setError(null)
     setNotice(null)
     try {
-      const snapshot = JSON.parse(await file.text()) as PeakSetExport
+      const snapshot = JSON.parse(await file.text()) as LiftrazaExport
       await importData(token, snapshot)
       setNotice(t('data.imported'))
     } catch (cause) {

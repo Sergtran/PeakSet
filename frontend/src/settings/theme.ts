@@ -1,6 +1,6 @@
 import type { Theme } from './types'
 
-const themeCacheKey = 'peakset.theme'
+const themeCacheKey = 'liftraza.theme'
 
 function resolveTheme(theme: Theme): 'light' | 'dark' {
   if (theme !== 'system') {

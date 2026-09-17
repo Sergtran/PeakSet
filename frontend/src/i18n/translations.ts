@@ -1,5 +1,5 @@
 export const en = {
-  'app.name': 'PeakSet',
+  'app.name': 'Liftraza',
   'app.tagline': 'Plan your training. Log every set. Track your progress.',
 
   'language.label': 'Language',
@@ -42,7 +42,7 @@ export const en = {
   'errors.nameTooLong': 'Name cannot exceed 100 characters.',
   'errors.invalidCredentials': 'Incorrect email or password.',
   'errors.validation': 'Some fields are not valid.',
-  'errors.network': 'Could not reach the PeakSet API. Check your connection and try again.',
+  'errors.network': 'Could not reach the Liftraza API. Check your connection and try again.',
   'errors.sessionExpired': 'Your session expired. Please sign in again.',
   'errors.httpStatus': 'The request failed (HTTP {status}).',
   'errors.unexpected': 'Something went wrong. Please try again.',
@@ -60,7 +60,7 @@ export const en = {
   'errors.resetTokenRequired': 'Paste the reset token.',
   'errors.notFound': 'That record no longer exists.',
   'errors.domainRule': 'The operation breaks a business rule.',
-  'errors.backupInvalid': 'That file is not a valid PeakSet backup.',
+  'errors.backupInvalid': 'That file is not a valid Liftraza backup.',
   'errors.calendarRange': 'That date is out of range.',
   'errors.settingsInvalid': 'Those settings are not valid.',
 
@@ -236,7 +236,7 @@ export const en = {
   'data.export': 'Export my data',
   'data.exportHint': 'Download everything as a JSON file.',
   'data.import': 'Import data',
-  'data.importHint': 'Load a JSON file exported from PeakSet.',
+  'data.importHint': 'Load a JSON file exported from Liftraza.',
   'data.importWarning': 'Importing replaces your routines and workouts with the file content.',
   'data.confirmImport': 'Replace your current data with the file?',
   'data.exported': 'File downloaded',
@@ -246,7 +246,7 @@ export const en = {
 export type TranslationKey = keyof typeof en
 
 export const es: Record<TranslationKey, string> = {
-  'app.name': 'PeakSet',
+  'app.name': 'Liftraza',
   'app.tagline': 'Planea tu entrenamiento. Registra cada serie. Sigue tu progreso.',
 
   'language.label': 'Idioma',
@@ -290,7 +290,7 @@ export const es: Record<TranslationKey, string> = {
   'errors.nameTooLong': 'El nombre no puede pasar de 100 caracteres.',
   'errors.invalidCredentials': 'Correo o contraseña incorrectos.',
   'errors.validation': 'Algunos campos no son válidos.',
-  'errors.network': 'No se pudo conectar con el API de PeakSet. Revisa tu conexión e intenta de nuevo.',
+  'errors.network': 'No se pudo conectar con el API de Liftraza. Revisa tu conexión e intenta de nuevo.',
   'errors.sessionExpired': 'Tu sesión expiró. Vuelve a iniciar sesión.',
   'errors.httpStatus': 'La petición falló (HTTP {status}).',
   'errors.unexpected': 'Algo salió mal. Intenta de nuevo.',
@@ -308,7 +308,7 @@ export const es: Record<TranslationKey, string> = {
   'errors.resetTokenRequired': 'Pega el token de recuperación.',
   'errors.notFound': 'Ese registro ya no existe.',
   'errors.domainRule': 'La operación rompe una regla del negocio.',
-  'errors.backupInvalid': 'Ese archivo no es un respaldo válido de PeakSet.',
+  'errors.backupInvalid': 'Ese archivo no es un respaldo válido de Liftraza.',
   'errors.calendarRange': 'Esa fecha está fuera de rango.',
   'errors.settingsInvalid': 'Esa configuración no es válida.',
 
@@ -486,7 +486,7 @@ export const es: Record<TranslationKey, string> = {
   'data.export': 'Exportar mis datos',
   'data.exportHint': 'Descarga todo en un archivo JSON.',
   'data.import': 'Importar datos',
-  'data.importHint': 'Carga un archivo JSON exportado desde PeakSet.',
+  'data.importHint': 'Carga un archivo JSON exportado desde Liftraza.',
   'data.importWarning': 'Importar reemplaza tus rutinas y entrenamientos con el contenido del archivo.',
   'data.confirmImport': '¿Reemplazar tus datos actuales con el archivo?',
   'data.exported': 'Archivo descargado',

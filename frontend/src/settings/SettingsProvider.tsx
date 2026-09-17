@@ -5,7 +5,7 @@ import { SettingsContext, type SettingsValue } from './context'
 import { applyTheme } from './theme'
 import { defaultSettings, type Settings, type Theme, type WeightUnit } from './types'
 
-const unitKey = 'peakset.unit'
+const unitKey = 'liftraza.unit'
 const saveDelayMs = 600
 
 function readUnit(): WeightUnit {

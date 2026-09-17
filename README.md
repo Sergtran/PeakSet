@@ -1,17 +1,17 @@
-# PeakSet
+# Liftraza
 
 **Training and progress tracker for strength training.** Plan your routines, log every set, and follow your progress over time.
 
-[![CI/CD](https://github.com/Sergtran/PeakSet/actions/workflows/ci.yml/badge.svg)](https://github.com/Sergtran/PeakSet/actions/workflows/ci.yml)
+[![CI/CD](https://github.com/Sergtran/Liftraza/actions/workflows/ci.yml/badge.svg)](https://github.com/Sergtran/Liftraza/actions/workflows/ci.yml)
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql)](https://www.postgresql.org/)
 [![Azure App Service](https://img.shields.io/badge/Azure-App%20Service-0078D4?logo=microsoftazure)](https://azure.microsoft.com/)
 
-![PeakSet](assets/logo-512.png)
+![Liftraza](assets/logo-512.png)
 
 ## Overview
 
-PeakSet is a REST API for tracking strength training. It manages training routines, planned sessions, completed workouts, personal records, calendar history, statistics and per-user preferences.
+Liftraza is a REST API for tracking strength training. It manages training routines, planned sessions, completed workouts, personal records, calendar history, statistics and per-user preferences.
 
 The API is built with ASP.NET Core 8 following Clean Architecture and Domain-Driven Design, persists data in PostgreSQL through Entity Framework Core, and authenticates users with ASP.NET Core Identity and JWT bearer tokens.
 
@@ -30,20 +30,20 @@ The API is built with ASP.NET Core 8 following Clean Architecture and Domain-Dri
 
 ```mermaid
 flowchart LR
-    client["Web / mobile client"] -->|HTTPS + JWT| api["PeakSet.Api<br/>ASP.NET Core 8"]
-    api --> app["PeakSet.Application<br/>use cases, DTOs, validation"]
-    app --> domain["PeakSet.Domain<br/>entities, value objects, business rules"]
-    app --> infra["PeakSet.Infrastructure<br/>EF Core, Identity, JWT, repositories"]
+    client["Web / mobile client"] -->|HTTPS + JWT| api["Liftraza.Api<br/>ASP.NET Core 8"]
+    api --> app["Liftraza.Application<br/>use cases, DTOs, validation"]
+    app --> domain["Liftraza.Domain<br/>entities, value objects, business rules"]
+    app --> infra["Liftraza.Infrastructure<br/>EF Core, Identity, JWT, repositories"]
     infra --> db[("PostgreSQL 16")]
 ```
 
 | Layer | Responsibility |
 |---|---|
-| `PeakSet.Domain` | Entities, value objects and business rules. No external dependencies. |
-| `PeakSet.Application` | Use cases, DTOs and validation rules. |
-| `PeakSet.Infrastructure` | EF Core persistence, repositories, Identity and JWT. |
-| `PeakSet.Api` | REST controllers, error handling middleware, Swagger and dependency wiring. |
-| `PeakSet.Tests` | Unit tests for the domain and application layers. |
+| `Liftraza.Domain` | Entities, value objects and business rules. No external dependencies. |
+| `Liftraza.Application` | Use cases, DTOs and validation rules. |
+| `Liftraza.Infrastructure` | EF Core persistence, repositories, Identity and JWT. |
+| `Liftraza.Api` | REST controllers, error handling middleware, Swagger and dependency wiring. |
+| `Liftraza.Tests` | Unit tests for the domain and application layers. |
 
 ## Tech stack
 
@@ -67,13 +67,13 @@ flowchart LR
 ├── .github/workflows/ci.yml   # Build, test and deploy pipeline
 ├── assets/                    # Brand assets
 ├── backend/                   # .NET solution
-│   ├── src/PeakSet.Api
-│   ├── src/PeakSet.Application
-│   ├── src/PeakSet.Domain
-│   ├── src/PeakSet.Infrastructure
-│   ├── tests/PeakSet.Tests
+│   ├── src/Liftraza.Api
+│   ├── src/Liftraza.Application
+│   ├── src/Liftraza.Domain
+│   ├── src/Liftraza.Infrastructure
+│   ├── tests/Liftraza.Tests
 │   ├── Dockerfile
-│   └── PeakSet.sln
+│   └── Liftraza.sln
 ├── docs/                      # Repository documentation
 ├── docker-compose.yml         # Local PostgreSQL + API stack
 └── README.md
@@ -107,7 +107,7 @@ docker compose up -d
 
 ```bash
 cd backend
-dotnet run --project src/PeakSet.Api
+dotnet run --project src/Liftraza.Api
 ```
 
 By default the API looks for a PostgreSQL instance configured through `ConnectionStrings__DefaultConnection` or `appsettings.Development.json`.
@@ -116,7 +116,7 @@ By default the API looks for a PostgreSQL instance configured through `Connectio
 
 ```bash
 cd backend
-dotnet test PeakSet.sln --configuration Release
+dotnet test Liftraza.sln --configuration Release
 ```
 
 ## Configuration
@@ -214,7 +214,7 @@ The schema is managed with Entity Framework Core migrations. To apply migrations
 
 ```bash
 cd backend
-dotnet ef database update --project src/PeakSet.Infrastructure --startup-project src/PeakSet.Api
+dotnet ef database update --project src/Liftraza.Infrastructure --startup-project src/Liftraza.Api
 ```
 
 ## Deployment
@@ -234,4 +234,4 @@ Authentication with Azure uses **GitHub Actions OIDC** and a federated credentia
 
 ## License
 
-Copyright © PeakSet. All rights reserved.
+Copyright © Liftraza. All rights reserved.

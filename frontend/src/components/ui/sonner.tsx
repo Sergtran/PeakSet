@@ -7,7 +7,7 @@ import {
 } from "lucide-react"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
-// Colours come from the PeakSet theme tokens, so the toaster follows
+// Colours come from the Liftraza theme tokens, so the toaster follows
 // the app theme without depending on a provider.
 const Toaster = ({ ...props }: ToasterProps) => (
   <Sonner

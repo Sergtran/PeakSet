@@ -25,11 +25,11 @@ jobs:
 
       - name: Restore
         working-directory: backend
-        run: dotnet restore PeakSet.sln
+        run: dotnet restore Liftraza.sln
 
       - name: Build and test
         working-directory: backend
-        run: dotnet test PeakSet.sln --configuration Release --no-restore
+        run: dotnet test Liftraza.sln --configuration Release --no-restore
 
   deploy:
     name: Deploy to Azure
@@ -87,7 +87,7 @@ jobs:
 
       - name: Publish API
         working-directory: backend
-        run: dotnet publish src/PeakSet.Api/PeakSet.Api.csproj --configuration Release --output "${{ runner.temp }}/publish"
+        run: dotnet publish src/Liftraza.Api/Liftraza.Api.csproj --configuration Release --output "${{ runner.temp }}/publish"
 
       # Runs before the deploy on purpose: the schema has to be ready for the new
       # code, never the other way around.
@@ -95,7 +95,7 @@ jobs:
         working-directory: backend
         env:
           ConnectionStrings__DefaultConnection: ${{ steps.database.outputs.connection }}
-        run: dotnet ef database update --project src/PeakSet.Infrastructure --startup-project src/PeakSet.Api
+        run: dotnet ef database update --project src/Liftraza.Infrastructure --startup-project src/Liftraza.Api
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3

@@ -1,7 +1,7 @@
 import { apiRequest } from './client'
 import type { ExerciseType, Laterality, PrStatus } from './types'
 
-export type PeakSetExport = {
+export type LiftrazaExport = {
   version: number
   exportedAtUtc: string
   settings: {
@@ -46,10 +46,10 @@ export type PeakSetExport = {
   }[]
 }
 
-export function exportData(token: string): Promise<PeakSetExport> {
-  return apiRequest<PeakSetExport>('/data/export', { token })
+export function exportData(token: string): Promise<LiftrazaExport> {
+  return apiRequest<LiftrazaExport>('/data/export', { token })
 }
 
-export function importData(token: string, payload: PeakSetExport): Promise<void> {
+export function importData(token: string, payload: LiftrazaExport): Promise<void> {
   return apiRequest<void>('/data/import', { method: 'POST', body: payload, token })
 }
