@@ -50,16 +50,52 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Publish API
-        working-directory: backend
-        run: dotnet publish src/PeakSet.Api/PeakSet.Api.csproj --configuration Release --output "${{ runner.temp }}/publish"
-
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # The connection string already lives in the App Service configuration, so
+      # it never has to be duplicated as a repository secret.
+      - name: Read the database connection string
+        id: database
+        run: |
+          connection=$(az webapp config connection-string list \
+            --name peakset-api --resource-group peakset-rg \
+            --query "[?name=='DefaultConnection'].value" -o tsv)
+
+          if [ -z "$connection" ]; then
+            connection=$(az webapp config appsettings list \
+              --name peakset-api --resource-group peakset-rg \
+              --query "[?name=='ConnectionStrings__DefaultConnection'].value" -o tsv)
+          fi
+
+          if [ -z "$connection" ]; then
+            echo "::error::No database connection string found. Tried the 'DefaultConnection' connection string and the 'ConnectionStrings__DefaultConnection' app setting."
+            exit 1
+          fi
+
+          echo "::add-mask::$connection"
+          echo "connection=$connection" >> "$GITHUB_OUTPUT"
+
+      - name: Install EF Core tools
+        run: |
+          dotnet tool install --global dotnet-ef --version 8.*
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Publish API
+        working-directory: backend
+        run: dotnet publish src/PeakSet.Api/PeakSet.Api.csproj --configuration Release --output "${{ runner.temp }}/publish"
+
+      # Runs before the deploy on purpose: the schema has to be ready for the new
+      # code, never the other way around.
+      - name: Apply database migrations
+        working-directory: backend
+        env:
+          ConnectionStrings__DefaultConnection: ${{ steps.database.outputs.connection }}
+        run: dotnet ef database update --project src/PeakSet.Infrastructure --startup-project src/PeakSet.Api
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
