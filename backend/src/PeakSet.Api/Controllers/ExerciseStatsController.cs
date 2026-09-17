@@ -24,6 +24,11 @@ public class ExerciseStatsController : ControllerBase
 	public async Task<ActionResult<IReadOnlyList<ExerciseSummaryDto>>> GetExercises(CancellationToken ct)
 		=> Ok(await _statsService.GetExercisesAsync(UserId, ct));
 
+	[HttpGet("catalog")]
+	[ProducesResponseType(typeof(IReadOnlyList<ExerciseCatalogDto>), StatusCodes.Status200OK)]
+	public async Task<ActionResult<IReadOnlyList<ExerciseCatalogDto>>> GetCatalog(CancellationToken ct)
+		=> Ok(await _statsService.GetCatalogAsync(ct));
+
 	[HttpGet("{name}/progress")]
 	[ProducesResponseType(typeof(ExerciseProgressDto), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -1,91 +1,178 @@
-import { fetchHome } from '../api/home'
-import { EmptyState, ErrorList, LoadingState } from '../components/Feedback'
-import { useApiQuery } from '../hooks/useApiQuery'
-import { useI18n } from '../i18n/context'
-import type { TranslationKey } from '../i18n/translations'
-import { useNavigation } from '../navigation/context'
-
-type SimpleRoute =
-  | { name: 'train' }
-  | { name: 'routines' }
-  | { name: 'history' }
-  | { name: 'calendar' }
-  | { name: 'stats' }
-  | { name: 'settings' }
-  | { name: 'data' }
-
-type Entry = {
-  route: SimpleRoute
-  title: TranslationKey
-  hint: TranslationKey
-}
-
-const entries: Entry[] = [
-  { route: { name: 'train' }, title: 'menu.train', hint: 'menu.trainHint' },
-  { route: { name: 'routines' }, title: 'menu.routines', hint: 'menu.routinesHint' },
-  { route: { name: 'history' }, title: 'menu.history', hint: 'menu.historyHint' },
-  { route: { name: 'calendar' }, title: 'menu.calendar', hint: 'menu.calendarHint' },
-  { route: { name: 'stats' }, title: 'menu.stats', hint: 'menu.statsHint' },
-  { route: { name: 'settings' }, title: 'menu.settings', hint: 'menu.settingsHint' },
-  { route: { name: 'data' }, title: 'menu.data', hint: 'menu.dataHint' },
-]
+import { AreaChart, CalendarDays, ChevronRight, Dumbbell, History, ListChecks, Plus } from 'lucide-react'
+import { fetchHome } from '@/api/home'
+import { fetchRoutines } from '@/api/routines'
+import { useAuth } from '@/auth/context'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { describeApiError } from '@/i18n/apiErrors'
+import { useI18n } from '@/i18n/context'
+import { useApiQuery } from '@/hooks/useApiQuery'
+import { useNavigation } from '@/navigation/context'
+import { formatDay } from '@/utils/format'
 
 export function HomePage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
+  const { profile } = useAuth()
   const { navigate } = useNavigation()
   const home = useApiQuery('home', (token) => fetchHome(token))
+  const routines = useApiQuery('routines', (token) => fetchRoutines(token))
   const routine = home.data?.currentRoutine ?? null
+  const firstName = (profile.displayName || profile.email).split(/[\s@]/)[0]
 
   return (
-    <>
-      <h1 className="page-title">
-        {routine ? t('home.currentRoutine', { name: routine.name }) : t('app.name')}
-      </h1>
+    <div className="grid gap-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {t('home.greeting', { name: firstName })}
+        </h1>
+      </header>
 
-      {home.isLoading && <LoadingState />}
-      {home.error !== null && <ErrorList error={home.error} />}
+      {home.isLoading && <Skeleton className="h-44 w-full rounded-xl" />}
 
-      {routine && (
-        <section className="stats-grid">
-          <Stat label={t('stats.workouts')} value={routine.workoutCount} />
-          <Stat label={t('stats.prs')} value={routine.prCount} />
-          <Stat label={t('stats.weeks')} value={routine.weeksInUse} />
-          {routine.workoutCount > 0 && (
-            <Stat
-              label={t('stats.daysSince')}
-              value={routine.daysSinceLastWorkout}
-              highlight={routine.daysSinceLastWorkout >= 7}
-            />
-          )}
-        </section>
+      {home.error !== null &&
+        describeApiError(home.error, t).map((message) => (
+          <p
+            key={message}
+            className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {message}
+          </p>
+        ))}
+
+      {!home.isLoading && home.error === null && routine && (
+        <Card>
+          <CardHeader>
+            <CardDescription>{t('home.currentRoutineLabel')}</CardDescription>
+            <CardTitle className="text-xl">{routine.name}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-5">
+            <dl className="grid grid-cols-3 gap-3 text-center">
+              <Metric
+                value={routine.activeSince ? formatDay(routine.activeSince, language) : '—'}
+                label={t('stats.activeSince')}
+              />
+              <Metric
+                value={
+                  routine.workoutsSinceActive === undefined
+                    ? '—'
+                    : String(routine.workoutsSinceActive)
+                }
+                label={t('stats.workouts')}
+              />
+              <Metric
+                value={routine.weeksSinceActive ? String(routine.weeksSinceActive) : '—'}
+                label={t('stats.weeks')}
+              />
+            </dl>
+            <p className="text-center text-xs text-muted-foreground">
+              {t('stats.totalAllTime', { count: routine.workoutCount })}
+            </p>
+            <Button size="lg" className="h-12 w-full" onClick={() => navigate({ name: 'train' })}>
+              <Dumbbell className="size-5" />
+              {t('menu.train')}
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       {!home.isLoading && home.error === null && !routine && (
-        <EmptyState title={t('home.noRoutine')} body={t('home.noRoutineBody')} />
+        <Card>
+          <CardContent className="grid gap-4 pt-6">
+            <div>
+              <p className="font-medium">{t('home.noRoutine')}</p>
+              <p className="text-sm text-muted-foreground">{t('home.noRoutineBody')}</p>
+            </div>
+            <Button className="w-full" onClick={() => navigate({ name: 'routines' })}>
+              <Plus className="size-4" />
+              {t('routines.new')}
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
-      <nav className="menu-grid">
-        {entries.map((entry) => (
-          <button
-            key={entry.route.name}
-            type="button"
-            className="menu-card"
-            onClick={() => navigate(entry.route)}
-          >
-            <span className="menu-card-title">{t(entry.title)}</span>
-            <span className="menu-card-hint">{t(entry.hint)}</span>
-          </button>
-        ))}
-      </nav>
-    </>
+      <section className="grid gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">{t('menu.routines')}</h2>
+          <Button variant="ghost" size="sm" onClick={() => navigate({ name: 'routines' })}>
+            {t('routines.manage')}
+          </Button>
+        </div>
+
+        {routines.isLoading && <Skeleton className="h-14 w-full rounded-xl" />}
+
+        {routines.data?.length === 0 && (
+          <p className="text-sm text-muted-foreground">{t('routines.emptyBody')}</p>
+        )}
+
+        <div className="grid gap-2">
+          {routines.data?.slice(0, 3).map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="flex items-center gap-3 rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-accent/40"
+              onClick={() => navigate({ name: 'routines', expand: item.id })}
+            >
+              <ListChecks className="size-4 text-muted-foreground" />
+              <span className="flex-1 truncate font-medium">{item.name}</span>
+              {item.id === routine?.routineId && (
+                <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
+                  {t('routines.current')}
+                </span>
+              )}
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid grid-cols-3 gap-3">
+        <Shortcut
+          icon={History}
+          label={t('menu.history')}
+          onClick={() => navigate({ name: 'history' })}
+        />
+        <Shortcut
+          icon={AreaChart}
+          label={t('menu.stats')}
+          onClick={() => navigate({ name: 'stats' })}
+        />
+        <Shortcut
+          icon={CalendarDays}
+          label={t('menu.calendar')}
+          onClick={() => navigate({ name: 'calendar' })}
+        />
+      </section>
+    </div>
   )
 }
 
-function Stat({ label, value, highlight = false }: { label: string; value: number; highlight?: boolean }) {
+function Metric({ value, label }: { value: string; label: string }) {
   return (
-    <article className={highlight ? 'card stat-card stat-card-warn' : 'card stat-card'}>
-      <span className="stat-value">{value}</span>
-      <span className="stat-label">{label}</span>
-    </article>
+    <div className="grid gap-1">
+      <dd className="text-lg font-semibold text-primary">{value}</dd>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+    </div>
+  )
+}
+
+function Shortcut({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: typeof History
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="grid place-items-center gap-2 rounded-xl border bg-card py-4 text-xs font-medium transition-colors hover:bg-accent/40"
+    >
+      <Icon className="size-5 text-primary" />
+      {label}
+    </button>
   )
 }

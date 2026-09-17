@@ -74,12 +74,15 @@ export const en = {
   'common.delete': 'Delete',
   'common.add': 'Add',
   'common.close': 'Close',
+  'common.rename': 'Rename',
+  'common.reset': 'Reset',
   'common.retry': 'Try again',
   'common.comingSoon': 'Not built yet',
   'common.comingSoonBody': 'This screen is part of the next block of work.',
   'common.none': 'None',
 
   'menu.train': 'Train',
+  'menu.home': 'Home',
   'menu.trainHint': 'Start a session',
   'menu.routines': 'My Routines',
   'menu.routinesHint': 'Create and edit your routines',
@@ -96,6 +99,8 @@ export const en = {
   'menu.signOut': 'Sign out',
 
   'home.currentRoutine': 'Current routine: {name}',
+  'home.currentRoutineLabel': 'Current routine',
+  'home.greeting': 'Hi {name}',
   'home.noRoutine': 'No routine yet',
   'home.noRoutineBody':
     'Create your first routine and mark it as current. Then your workouts and records will show up here.',
@@ -113,6 +118,7 @@ export const en = {
   'routines.makeCurrent': 'Set as current',
   'routines.sessionCount': '{count} sessions',
   'routines.open': 'Open',
+  'routines.manage': 'Manage',
 
   'routine.sessions': 'Sessions',
   'routine.noSessions': 'This routine has no sessions',
@@ -163,6 +169,7 @@ export const en = {
   'train.timerStart': 'Start timer',
   'train.timerStop': 'Stop timer',
   'train.timerSkip': 'Skip',
+  'train.timerBack': 'Previous',
   'train.timerFinished': 'Timer finished',
 
   'history.empty': 'Nothing logged yet',
@@ -198,8 +205,15 @@ export const en = {
   'stats.timeline': 'Heaviest set per session',
   'stats.noTimeline': 'Not enough data to draw a chart yet',
   'stats.search': 'Search an exercise',
+  'stats.activeSince': 'Active since',
+  'stats.sinceActive': 'Workouts on this run',
+  'stats.totalAllTime': '{count} workouts with this routine in total',
 
   'settings.title': 'Settings',
+  'settings.profile': 'Profile',
+  'settings.profileNote': 'Your name and email come from your account.',
+  'settings.preferences': 'Preferences',
+  'settings.saveFailed': 'Could not access your settings.',
   'settings.timer': 'Interval timer',
   'settings.prep': 'Prep (sec)',
   'settings.work': 'Work (sec)',
@@ -305,12 +319,15 @@ export const es: Record<TranslationKey, string> = {
   'common.delete': 'Eliminar',
   'common.add': 'Añadir',
   'common.close': 'Cerrar',
+  'common.rename': 'Renombrar',
+  'common.reset': 'Reiniciar',
   'common.retry': 'Reintentar',
   'common.comingSoon': 'Sin construir',
   'common.comingSoonBody': 'Esta pantalla es parte del siguiente bloque de trabajo.',
   'common.none': 'Ninguno',
 
   'menu.train': 'Entrenar',
+  'menu.home': 'Inicio',
   'menu.trainHint': 'Empezar una sesión',
   'menu.routines': 'Mis Rutinas',
   'menu.routinesHint': 'Crea y edita tus rutinas',
@@ -327,6 +344,8 @@ export const es: Record<TranslationKey, string> = {
   'menu.signOut': 'Cerrar Sesión',
 
   'home.currentRoutine': 'Rutina actual: {name}',
+  'home.currentRoutineLabel': 'Rutina actual',
+  'home.greeting': 'Hola {name}',
   'home.noRoutine': 'Todavía no hay rutina',
   'home.noRoutineBody':
     'Crea tu primera rutina y márcala como actual. Después tus entrenamientos y récords van a aparecer aquí.',
@@ -345,6 +364,7 @@ export const es: Record<TranslationKey, string> = {
   'routines.makeCurrent': 'Marcar como actual',
   'routines.sessionCount': '{count} sesiones',
   'routines.open': 'Abrir',
+  'routines.manage': 'Gestionar',
 
   'routine.sessions': 'Sesiones',
   'routine.noSessions': 'Esta rutina no tiene sesiones',
@@ -396,6 +416,7 @@ export const es: Record<TranslationKey, string> = {
   'train.timerStart': 'Iniciar timer',
   'train.timerStop': 'Detener timer',
   'train.timerSkip': 'Saltar',
+  'train.timerBack': 'Anterior',
   'train.timerFinished': 'Timer terminado',
 
   'history.empty': 'Todavía no hay nada registrado',
@@ -431,8 +452,15 @@ export const es: Record<TranslationKey, string> = {
   'stats.timeline': 'Serie más pesada por sesión',
   'stats.noTimeline': 'Todavía no hay datos suficientes para la gráfica',
   'stats.search': 'Buscar un ejercicio',
+  'stats.activeSince': 'Activa desde',
+  'stats.sinceActive': 'Entrenamientos en esta racha',
+  'stats.totalAllTime': '{count} entrenamientos en total con esta rutina',
 
   'settings.title': 'Configuración',
+  'settings.profile': 'Perfil',
+  'settings.profileNote': 'Tu nombre y correo vienen de tu cuenta.',
+  'settings.preferences': 'Preferencias',
+  'settings.saveFailed': 'No se pudo acceder a tu configuración.',
   'settings.timer': 'Timer de intervalos',
   'settings.prep': 'Prep (seg)',
   'settings.work': 'Work (seg)',

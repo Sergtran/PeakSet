@@ -11,7 +11,7 @@ function resolveTheme(theme: Theme): 'light' | 'dark' {
 
 export function applyTheme(theme: Theme): void {
   const resolved = resolveTheme(theme)
-  document.documentElement.dataset.theme = resolved
+  document.documentElement.classList.toggle('dark', resolved === 'dark')
   try {
     localStorage.setItem(themeCacheKey, resolved)
   } catch {
@@ -24,8 +24,13 @@ export function applyCachedTheme(): void {
   try {
     const cached = localStorage.getItem(themeCacheKey)
     if (cached === 'light' || cached === 'dark') {
-      document.documentElement.dataset.theme = cached
+      document.documentElement.classList.toggle('dark', cached === 'dark')
+      return
     }
+    document.documentElement.classList.toggle(
+      'dark',
+      window.matchMedia('(prefers-color-scheme: dark)').matches,
+    )
   } catch {
     return
   }

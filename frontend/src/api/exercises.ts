@@ -1,5 +1,11 @@
 import { apiRequest } from './client'
-import type { PrStatus } from './types'
+import type { ExerciseType, Laterality, PrStatus } from './types'
+
+export type ExerciseCatalogEntry = {
+  name: string
+  exerciseType: ExerciseType
+  defaultLaterality: Laterality
+}
 
 export type ExerciseSummary = {
   name: string
@@ -27,6 +33,10 @@ export type ExerciseProgress = {
 
 export function fetchExercises(token: string): Promise<ExerciseSummary[]> {
   return apiRequest<ExerciseSummary[]>('/exercises', { token })
+}
+
+export function fetchExerciseCatalog(token: string): Promise<ExerciseCatalogEntry[]> {
+  return apiRequest<ExerciseCatalogEntry[]>('/exercises/catalog', { token })
 }
 
 export function fetchExerciseProgress(

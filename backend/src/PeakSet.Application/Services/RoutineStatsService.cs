@@ -36,7 +36,19 @@ public sealed class RoutineStatsService : IRoutineStatsService
 			return new HomeDto(null);
 
 		var summary = await _workoutRepository.GetRoutineSummaryAsync(userId, routineId, ct);
-		return new HomeDto(BuildOverview(routine.Id, routine.Name.Value, summary));
+
+		// "Since active" is measured from the moment the routine was picked, and it
+		// restarts only when the user actually switches to another routine.
+		var activeSince = settings.CurrentRoutineSince;
+		var workoutsSinceActive = summary?.WorkoutCount ?? 0;
+		if (activeSince is not null)
+		{
+			var dates = await _workoutRepository.GetWorkoutDatesAsync(userId, routineId, ct);
+			workoutsSinceActive = dates.Count(date => date >= activeSince.Value);
+		}
+
+		return new HomeDto(
+			BuildOverview(routine.Id, routine.Name.Value, summary, activeSince, workoutsSinceActive));
 	}
 
 	public async Task<RoutineStatsDto> GetRoutineStatsAsync(
@@ -83,10 +95,15 @@ public sealed class RoutineStatsService : IRoutineStatsService
 			?? throw new NotFoundException("Routine not found.");
 
 	private static RoutineOverviewDto BuildOverview(
-		Guid routineId, string name, RoutineWorkoutSummary? summary)
+		Guid routineId,
+		string name,
+		RoutineWorkoutSummary? summary,
+		DateTime? activeSince = null,
+		int workoutsSinceActive = 0)
 	{
 		if (summary is null || summary.WorkoutCount == 0)
-			return new RoutineOverviewDto(routineId, name, 0, null, null, -1, 0, 0);
+			return new RoutineOverviewDto(
+				routineId, name, 0, null, null, -1, 0, 0, activeSince, workoutsSinceActive, Weeks(activeSince));
 
 		var today = DateTime.UtcNow.Date;
 		var first = summary.FirstDate!.Value.Date;
@@ -96,7 +113,16 @@ public sealed class RoutineStatsService : IRoutineStatsService
 
 		return new RoutineOverviewDto(
 			routineId, name, summary.WorkoutCount,
-			summary.FirstDate, summary.LastDate, daysSinceLast, weeksInUse, summary.PrCount);
+			summary.FirstDate, summary.LastDate, daysSinceLast, weeksInUse, summary.PrCount,
+			activeSince, workoutsSinceActive, Weeks(activeSince));
+	}
+
+	private static int Weeks(DateTime? since)
+	{
+		if (since is null)
+			return 0;
+
+		return Math.Max(1, (DateTime.UtcNow.Date - since.Value.Date).Days / 7 + 1);
 	}
 
 	private static IReadOnlyList<WeekActivityDto> BuildWeekActivity(IReadOnlyList<DateTime> dates)

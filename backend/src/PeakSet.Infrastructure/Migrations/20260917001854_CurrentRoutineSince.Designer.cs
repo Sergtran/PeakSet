@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PeakSet.Infrastructure.Data;
@@ -11,9 +12,11 @@ using PeakSet.Infrastructure.Data;
 namespace PeakSet.Infrastructure.Migrations
 {
     [DbContext(typeof(PeakSetDbContext))]
-    partial class PeakSetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260917001854_CurrentRoutineSince")]
+    partial class CurrentRoutineSince
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

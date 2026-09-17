@@ -9,6 +9,9 @@ export type RoutineOverview = {
   daysSinceLastWorkout: number
   weeksInUse: number
   prCount: number
+  activeSince?: string | null
+  workoutsSinceActive?: number
+  weeksSinceActive?: number
 }
 
 export type Home = {

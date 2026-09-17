@@ -8,10 +8,24 @@ namespace PeakSet.Application.Services;
 public sealed class ExerciseStatsService : IExerciseStatsService
 {
 	private readonly IWorkoutRepository _workoutRepository;
+	private readonly IExerciseCatalogRepository _catalogRepository;
 
-	public ExerciseStatsService(IWorkoutRepository workoutRepository)
+	public ExerciseStatsService(
+		IWorkoutRepository workoutRepository,
+		IExerciseCatalogRepository catalogRepository)
 	{
 		_workoutRepository = workoutRepository;
+		_catalogRepository = catalogRepository;
+	}
+
+	public async Task<IReadOnlyList<ExerciseCatalogDto>> GetCatalogAsync(CancellationToken ct = default)
+	{
+		var entries = await _catalogRepository.GetAllAsync(ct);
+
+		return entries
+			.Select(entry => new ExerciseCatalogDto(
+				entry.Name.Value, entry.ExerciseType, entry.DefaultLaterality))
+			.ToList();
 	}
 
 	public async Task<IReadOnlyList<ExerciseSummaryDto>> GetExercisesAsync(
