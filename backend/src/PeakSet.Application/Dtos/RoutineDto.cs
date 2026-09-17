@@ -1,3 +1,3 @@
 ﻿namespace PeakSet.Application.Dtos;
 
-public record RoutineDto(Guid Id, string Name, DateTime CreatedAt);
+public record RoutineDto(Guid Id, string Name, DateTime CreatedAt, DateTime? LastWorkoutDate);

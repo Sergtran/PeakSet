@@ -1,6 +1,7 @@
 import { fetchExerciseProgress } from '../api/exercises'
 import { ErrorList, LoadingState } from '../components/Feedback'
 import { ScreenHeader } from '../components/ScreenHeader'
+import { ProgressChart } from '@/components/ProgressChart'
 import { useApiQuery } from '../hooks/useApiQuery'
 import { useI18n } from '../i18n/context'
 import { useSettings } from '../settings/context'
@@ -63,7 +64,10 @@ export function ExercisePage({ exerciseName }: { exerciseName: string }) {
         {series.length < 2 ? (
           <p className="list-row-meta">{t('stats.noTimeline')}</p>
         ) : (
-          <LineChart points={series} />
+          <>
+            <ProgressChart points={series} unit={useReps ? undefined : settings.unit} />
+            <p className="text-xs text-muted-foreground">{t('stats.timelineNote')}</p>
+          </>
         )}
       </section>
 
@@ -94,42 +98,3 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-type Point = {
-  label: string
-  value: number
-}
-
-const chartWidth = 320
-const chartHeight = 140
-const chartPadding = 12
-
-function LineChart({ points }: { points: Point[] }) {
-  const values = points.map((point) => point.value)
-  const max = Math.max(...values)
-  const min = Math.min(...values)
-  const span = max - min || 1
-  const step = (chartWidth - chartPadding * 2) / (points.length - 1)
-
-  const coords = points.map((point, index) => ({
-    x: chartPadding + index * step,
-    y: chartHeight - chartPadding - ((point.value - min) / span) * (chartHeight - chartPadding * 2),
-    ...point,
-  }))
-
-  const path = coords.map((coord) => `${coord.x},${coord.y}`).join(' ')
-
-  return (
-    <div className="chart">
-      <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img">
-        <polyline className="chart-line" points={path} />
-        {coords.map((coord) => (
-          <circle key={`${coord.label}-${coord.x}`} className="chart-dot" cx={coord.x} cy={coord.y} r={3} />
-        ))}
-      </svg>
-      <div className="chart-legend">
-        <span>{min}</span>
-        <span>{max}</span>
-      </div>
-    </div>
-  )
-}

@@ -1,3 +1,5 @@
+import { useI18n } from '@/i18n/context'
+
 export type ChartPoint = {
   label: string
   value: number
@@ -7,7 +9,8 @@ const width = 320
 const height = 130
 const padding = 12
 
-export function ProgressChart({ points }: { points: ChartPoint[] }) {
+export function ProgressChart({ points, unit }: { points: ChartPoint[]; unit?: string }) {
+  const { t } = useI18n()
   const values = points.map((point) => point.value)
   const max = Math.max(...values)
   const min = Math.min(...values)
@@ -37,8 +40,18 @@ export function ProgressChart({ points }: { points: ChartPoint[] }) {
         ))}
       </svg>
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>{min}</span>
-        <span>{max}</span>
+        <span>{points[0].label}</span>
+        <span>{points[points.length - 1].label}</span>
+      </div>
+      <div className="flex justify-between text-xs">
+        <span className="text-muted-foreground">
+          {t('stats.lowest')} {min}
+          {unit ? ` ${unit}` : ''}
+        </span>
+        <span className="font-medium text-primary">
+          {t('stats.highest')} {max}
+          {unit ? ` ${unit}` : ''}
+        </span>
       </div>
     </div>
   )

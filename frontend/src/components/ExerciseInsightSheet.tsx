@@ -69,7 +69,10 @@ export function ExerciseInsightSheet({ exercise, onClose }: Props) {
                   {points.length < 2 ? (
                     <p className="text-sm text-muted-foreground">{t('stats.noTimeline')}</p>
                   ) : (
-                    <ProgressChart points={points} />
+                    <>
+                      <ProgressChart points={points} unit={settings.unit} />
+                      <p className="text-xs text-muted-foreground">{t('stats.timelineNote')}</p>
+                    </>
                   )}
                 </section>
               )}
