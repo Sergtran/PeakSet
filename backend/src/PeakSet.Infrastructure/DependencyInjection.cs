@@ -19,6 +19,7 @@ public static class DependencyInjection
 		services.AddScoped<IEmailSender, LoggingEmailSender>();
 		services.AddScoped<IBackupService, BackupService>();
 		services.AddScoped<IRoutineRepository, EfRoutineRepository>();
+		services.AddScoped<IExerciseCatalogRepository, EfExerciseCatalogRepository>();
 		services.AddScoped<IWorkoutRepository, EfWorkoutRepository>();
 		services.AddScoped<IUserSettingsRepository, EfUserSettingsRepository>();
 		return services;

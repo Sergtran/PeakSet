@@ -52,6 +52,12 @@ public sealed class UserSettings : Entity
 	/// </summary>
 	public Guid? CurrentRoutineId { get; private set; }
 
+	/// <summary>
+	/// When the current routine was picked. Kept in sync by <see cref="SetCurrentRoutine"/>:
+	/// re-selecting the same routine does not restart the clock.
+	/// </summary>
+	public DateTime? CurrentRoutineSince { get; private set; }
+
 	public Theme Theme { get; private set; }
 
 	public int TimerPrepSeconds { get; private set; }
@@ -69,12 +75,16 @@ public sealed class UserSettings : Entity
 		if (routineId == Guid.Empty)
 			throw new ArgumentException("RoutineId cannot be empty.", nameof(routineId));
 
+		if (CurrentRoutineId != routineId)
+			CurrentRoutineSince = DateTime.UtcNow;
+
 		CurrentRoutineId = routineId;
 	}
 
 	public void ClearCurrentRoutine()
 	{
 		CurrentRoutineId = null;
+		CurrentRoutineSince = null;
 	}
 
 	public void SetTheme(Theme theme)

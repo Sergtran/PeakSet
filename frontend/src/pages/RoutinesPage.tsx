@@ -8,7 +8,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { fetchHome } from '@/api/home'
-import { fetchExercises } from '@/api/exercises'
+import { fetchExerciseCatalog, fetchExercises } from '@/api/exercises'
 import {
   createSession,
   createSessionExercise,
@@ -387,7 +387,14 @@ function ExerciseForm({
 }) {
   const { t } = useI18n()
   const nameId = useId()
-  const suggestions = useApiQuery('exercises', (token) => fetchExercises(token))
+  const catalog = useApiQuery('exercise-catalog', (token) => fetchExerciseCatalog(token))
+  const used = useApiQuery('exercises', (token) => fetchExercises(token))
+  const suggestions = Array.from(
+    new Set([
+      ...(used.data ?? []).map((item) => item.name),
+      ...(catalog.data ?? []).map((item) => item.name),
+    ]),
+  )
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [exerciseType, setExerciseType] = useState<ExerciseType>('Standard')
@@ -423,8 +430,8 @@ function ExerciseForm({
           onChange={(event) => setName(event.target.value)}
         />
         <datalist id={`${nameId}-list`}>
-          {suggestions.data?.map((item) => (
-            <option key={item.name} value={item.name} />
+          {suggestions.map((name) => (
+            <option key={name} value={name} />
           ))}
         </datalist>
       </div>

@@ -205,6 +205,9 @@ export const en = {
   'stats.timeline': 'Heaviest set per session',
   'stats.noTimeline': 'Not enough data to draw a chart yet',
   'stats.search': 'Search an exercise',
+  'stats.activeSince': 'Active since',
+  'stats.sinceActive': 'Workouts on this run',
+  'stats.totalAllTime': '{count} workouts with this routine in total',
 
   'settings.title': 'Settings',
   'settings.profile': 'Profile',
@@ -449,6 +452,9 @@ export const es: Record<TranslationKey, string> = {
   'stats.timeline': 'Serie más pesada por sesión',
   'stats.noTimeline': 'Todavía no hay datos suficientes para la gráfica',
   'stats.search': 'Buscar un ejercicio',
+  'stats.activeSince': 'Activa desde',
+  'stats.sinceActive': 'Entrenamientos en esta racha',
+  'stats.totalAllTime': '{count} entrenamientos en total con esta rutina',
 
   'settings.title': 'Configuración',
   'settings.profile': 'Perfil',

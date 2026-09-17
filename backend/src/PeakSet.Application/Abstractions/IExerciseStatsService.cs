@@ -12,4 +12,6 @@ public interface IExerciseStatsService
 		string userId,
 		string exerciseName,
 		CancellationToken ct = default);
+
+	Task<IReadOnlyList<ExerciseCatalogDto>> GetCatalogAsync(CancellationToken ct = default);
 }

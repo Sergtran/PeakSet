@@ -8,4 +8,7 @@ public record RoutineOverviewDto(
     DateTime? LastWorkoutDate,
     int DaysSinceLastWorkout,
     int WeeksInUse,
-    int PrCount);
+    int PrCount,
+    DateTime? ActiveSince,
+    int WorkoutsSinceActive,
+    int WeeksSinceActive);

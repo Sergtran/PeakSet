@@ -9,9 +9,10 @@ import { describeApiError } from '@/i18n/apiErrors'
 import { useI18n } from '@/i18n/context'
 import { useApiQuery } from '@/hooks/useApiQuery'
 import { useNavigation } from '@/navigation/context'
+import { formatDay } from '@/utils/format'
 
 export function HomePage() {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
   const { profile } = useAuth()
   const { navigate } = useNavigation()
   const home = useApiQuery('home', (token) => fetchHome(token))
@@ -47,10 +48,19 @@ export function HomePage() {
           </CardHeader>
           <CardContent className="grid gap-5">
             <dl className="grid grid-cols-3 gap-3 text-center">
-              <Metric value={routine.workoutCount} label={t('stats.workouts')} />
-              <Metric value={routine.prCount} label={t('stats.prs')} />
-              <Metric value={routine.weeksInUse} label={t('stats.weeks')} />
+              <Metric
+                value={routine.activeSince ? formatDay(routine.activeSince, language) : '—'}
+                label={t('stats.activeSince')}
+              />
+              <Metric value={String(routine.workoutsSinceActive)} label={t('stats.workouts')} />
+              <Metric
+                value={routine.weeksSinceActive === 0 ? '—' : String(routine.weeksSinceActive)}
+                label={t('stats.weeks')}
+              />
             </dl>
+            <p className="text-center text-xs text-muted-foreground">
+              {t('stats.totalAllTime', { count: routine.workoutCount })}
+            </p>
             <Button size="lg" className="h-12 w-full" onClick={() => navigate({ name: 'train' })}>
               <Dumbbell className="size-5" />
               {t('menu.train')}
@@ -130,10 +140,10 @@ export function HomePage() {
   )
 }
 
-function Metric({ value, label }: { value: number; label: string }) {
+function Metric({ value, label }: { value: string; label: string }) {
   return (
     <div className="grid gap-1">
-      <dd className="text-2xl font-semibold text-primary">{value}</dd>
+      <dd className="text-lg font-semibold text-primary">{value}</dd>
       <dt className="text-xs text-muted-foreground">{label}</dt>
     </div>
   )
